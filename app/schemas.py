@@ -67,5 +67,8 @@ class ChatRequest(BaseModel):
 class ReportCreate(BaseModel):
     target_type: str = Field(pattern="^(post|reply)$")
     target_id: str = Field(min_length=1, max_length=36)
-    category: str = Field(pattern="^(sexual_content|abusive_content|spam|illegal)$")
+    category: str = Field(
+        pattern="^(sexual_content|abusive_content|spam|threat|doxxing"
+        "|self_harm_encouragement|exploitation|fraud|illegal)$"
+    )
     details: str | None = Field(default=None, max_length=2_000)

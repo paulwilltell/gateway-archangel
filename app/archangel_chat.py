@@ -2,10 +2,16 @@
 
 Design constraints, in order:
 
-1. **Nothing is stored.** The server keeps no conversation record of any
-   kind — no table, no log line with message content. History lives in the
-   visitor's browser and is resent with each turn. There is nothing to
-   seize.
+1. **Gateway persists no conversation.** The application keeps no
+   conversation record of any kind — no table, no log line with message
+   content. History lives in the visitor's browser and is resent each turn,
+   so this application's database holds nothing to seize.
+
+   State this precisely and never more broadly: the message is still sent to
+   the hosted model provider and is subject to that provider's retention, and
+   it may traverse hosting, proxy, or network infrastructure with its own
+   logs. "Gateway does not store conversations" is true and testable;
+   "nothing is stored anywhere" is not, and the UI must not say it.
 2. **Safety is platform-owned.** Every incoming message passes the same
    crisis classifier as posts; its resources are returned alongside the
    reply and also shown to the model, which cannot suppress them.

@@ -41,9 +41,10 @@
         <div class="loom-strip {{ 'loom-clean' if loom.summary.downgraded == 0 else 'loom-flagged' }}">
           <span class="loom-mark">◈</span>
           <span>
-            <strong>Loom verified</strong> — {{ loom.summary.grounded }}/{{ loom.summary.total_claims }}
-            claim{{ '' if loom.summary.total_claims == 1 else 's' }} grounded in the canonical corpus
-            {%- if loom.summary.downgraded %}; {{ loom.summary.downgraded }} downgraded (cited text not attested){% endif %}.
+            <strong>Canonical provenance verified</strong> — {{ loom.summary.grounded }}/{{ loom.summary.total_claims }}
+            claim{{ '' if loom.summary.total_claims == 1 else 's' }} cite a passage attested in this corpus
+            {%- if loom.summary.downgraded %}; {{ loom.summary.downgraded }} had textual support withdrawn (cited text not attested){% endif %}.
+            <em>This checks that the citations are real, not that the passage entails the claim — that judgment is the model's and is not machine-verified.</em>
           </span>
           <span class="loom-engine">{{ loom.engine }} · deterministic</span>
         </div>

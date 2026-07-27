@@ -575,6 +575,7 @@ button:active { transform: translateY(0); filter: brightness(0.97); }
   line-height: 1.5;
 }
 .loom-strip strong { font-weight: 650; }
+.loom-strip em { display: block; margin-top: 4px; font-style: normal; font-size: 10px; opacity: 0.75; }
 .loom-mark { font-size: 13px; }
 .loom-engine { margin-left: auto; white-space: nowrap; font-size: 9px; text-transform: uppercase; letter-spacing: 0.12em; opacity: 0.7; }
 .loom-clean { color: #a8e0bf; background: rgba(83, 160, 116, 0.08); border: 1px solid rgba(83, 160, 116, 0.2); }

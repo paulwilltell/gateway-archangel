@@ -68,6 +68,23 @@ def test_screen_allows_heterodox_viewpoints():
     assert screen_content("I believe the church is wrong about baptism and always has been.").allowed
 
 
+def test_screen_blocks_conduct_harms_beyond_the_original_four():
+    urging = screen_content("Honestly you should kill yourself, the world is better without you.")
+    assert not urging.allowed and urging.category == "self_harm_encouragement"
+
+    unmasking = screen_content("Everyone should know his real name is Paul and here is his home address.")
+    assert not unmasking.allowed and unmasking.category == "doxxing"
+
+
+def test_own_crisis_disclosure_is_never_a_violation():
+    """Disclosing your own suicidal thoughts is a crisis to support, not
+    conduct to remove — the opposite of urging it on someone else."""
+    disclosure = screen_content(
+        "I have been feeling suicidal for weeks and I want to die. I am ashamed to tell anyone."
+    )
+    assert disclosure.allowed
+
+
 # --- enforcement at the API ---------------------------------------------------
 
 def test_policy_violation_rejected_at_submission():

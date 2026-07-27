@@ -66,10 +66,15 @@
     <form action="/posts/{{ post.id }}/report" method="post">
       <label>Reason
         <select name="category" required>
-          <option value="sexual_content">Explicit sexual content</option>
           <option value="abusive_content">Abuse or harassment of a person</option>
+          <option value="threat">Credible threat of violence</option>
+          <option value="doxxing">Doxxing, or unmasking an anonymous member</option>
+          <option value="self_harm_encouragement">Encouraging someone toward self-harm</option>
+          <option value="exploitation">Grooming or sexual approach to a minor</option>
+          <option value="sexual_content">Explicit sexual content</option>
+          <option value="fraud">Fraud, scam, or impersonation</option>
           <option value="spam">Spam</option>
-          <option value="illegal">Illegal content</option>
+          <option value="illegal">Other illegal content</option>
         </select>
       </label>
       <label>Details (optional)

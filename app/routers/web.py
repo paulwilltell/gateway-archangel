@@ -11,6 +11,7 @@ from sqlalchemy.orm import joinedload, selectinload
 
 from app.analysis.engine import analysis_to_dict, analyze_target
 from app.models import Analysis, AuditEvent, ContentReport, Post, Reply
+from app.policy import POLICY_CATEGORIES
 from app.routers.common import (
     anonymous_pseudonym,
     enforce_content_policy,
@@ -201,7 +202,7 @@ def report_post(
     category: str = Form(...),
     details: str = Form(""),
 ):
-    if category not in {"sexual_content", "abusive_content", "spam", "illegal"}:
+    if category not in set(POLICY_CATEGORIES):
         raise HTTPException(422, "Unknown report category")
     enforce_rate_limit(request, "report")
     with request.app.state.db.session() as db:

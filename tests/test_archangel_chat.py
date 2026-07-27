@@ -58,12 +58,16 @@ def test_chat_is_rate_limited():
         assert client.post("/api/v1/archangel/chat", json=payload).status_code == 429
 
 
-def test_chat_page_renders_with_no_storage_promise():
+def test_chat_page_states_storage_claim_precisely():
+    """The no-storage claim must be scoped to what Gateway controls, and must
+    disclose provider and infrastructure retention rather than implying the
+    conversation vanishes everywhere."""
     app = create_app(make_settings())
     with TestClient(app) as client:
-        page = client.get("/archangel")
-        assert page.status_code == 200
-        assert "not saved anywhere" in page.text
+        page = client.get("/archangel").text
+    assert page.count("no conversation table") or "keeps no conversation record" in page
+    assert "AI provider" in page and "retention" in page
+    assert "not saved anywhere" not in page, "overclaim: scope it to Gateway"
 
 
 def test_no_conversation_table_exists():
