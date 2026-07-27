@@ -1,0 +1,33 @@
+name: gate
+
+# The gate: tests plus the theological golden set. Both run in deterministic
+# mode, so no API key is needed and no request is billed. Never claim the
+# suite passes without seeing this green.
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  gate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Tests
+        run: python -m pytest -q
+
+      - name: Theological eval golden set
+        run: python scripts/run_evals.py
+
+      - name: Corpus integrity
+        run: python scripts/validate_corpus.py

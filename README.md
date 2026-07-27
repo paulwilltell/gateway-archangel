@@ -44,10 +44,33 @@ python -m venv .venv
 source .venv/bin/activate        # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
 cp .env.example .env
-uvicorn app.main:app --reload
+uvicorn app.main:app --reload --no-access-log   # the flag matters: see below
 ```
 
 Open `http://127.0.0.1:8000`. API documentation is at `/docs`.
+
+**Always run with `--no-access-log`.** Uvicorn's access log records every
+visitor's IP address. Gateway deliberately has no accounts and stores no
+conversations so that no list of who reads or writes here exists; the access
+log would rebuild that list in stdout. The Dockerfile and Makefile already
+pass the flag.
+
+### Checks
+
+```bash
+pytest                                     # 39 tests
+python scripts/run_evals.py                # 20-case theological golden set (free)
+python scripts/run_evals.py --analyzer anthropic   # same set against Claude (costs money)
+python scripts/validate_corpus.py          # corpus integrity
+python scripts/backup_db.py                # safe online backup, keeps 30
+```
+
+Rebuilding the data layers (only needed if you change sources):
+
+```bash
+python scripts/build_kjv_corpus.py   # needs app/data/kjv_full_raw.json
+python scripts/build_lexicon.py      # needs app/data/strongs_*_raw.js
+```
 
 The default `ARCHANGEL_ANALYZER=heuristic` is deliberate. The app works without sending spiritual disclosures to a hosted model.
 

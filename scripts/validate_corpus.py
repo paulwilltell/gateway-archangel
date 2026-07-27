@@ -25,7 +25,9 @@ REFERENCE = re.compile(r"^.+\s\d{1,3}:\d{1,3}$")
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Validate imported corpus records.")
-    parser.add_argument("--source-id", default="kjv_local")
+    # The canonical corpus is the full KJV 1769 built by
+    # scripts/build_kjv_corpus.py, whose records carry source_id "kjv_1769".
+    parser.add_argument("--source-id", default="kjv_1769")
     parser.add_argument("--allow-partial", action="store_true")
     args = parser.parse_args()
 
@@ -33,8 +35,7 @@ def main() -> None:
     database = Database(settings.database_url)
     database.create_all()
     with database.session() as db:
-        if args.source_id == "kjv_local":
-            seed_corpus(db, settings.corpus_seed_path, settings.corpus_version)
+        seed_corpus(db, settings.corpus_seed_path, settings.corpus_version)
         rows = db.scalars(select(BibleVerse).where(BibleVerse.source_id == args.source_id)).all()
 
     errors: list[str] = []
