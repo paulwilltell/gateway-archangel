@@ -19,15 +19,3 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
-
----
-
-Third-party content bundled in this repository:
-
-- app/data/kjv_full.json — King James Version (1769). Public domain in the
-  United States. Built from the scrollmapper/bible_databases dataset.
-- app/data/lexicon.json — Strong's Hebrew and Greek Dictionaries. Public
-  domain. Built from the openscriptures/strongs dataset. Root-derivation
-  fields are deliberately excluded; see scripts/build_lexicon.py.
-- app/vendor/loom_engine.py — Loom v2.2, a deterministic reasoning engine by
-  the same author, vendored as a pinned copy. See app/vendor/README.md.
