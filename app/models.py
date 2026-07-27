@@ -41,6 +41,10 @@ class Post(Base):
     visibility: Mapped[str] = mapped_column(String(16), default="public")
     status: Mapped[str] = mapped_column(String(24), default="published")
     training_consent: Mapped[bool] = mapped_column(Boolean, default=False)
+    # SHA-256 of the author's ownership token. The token itself is shown once
+    # and never stored, so possession proves authorship without the server
+    # holding anything that links a person to their posts.
+    owner_token_hash: Mapped[str | None] = mapped_column(String(64), nullable=True, index=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, index=True)
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, onupdate=utcnow)
 
@@ -66,6 +70,7 @@ class Reply(Base):
     body: Mapped[str] = mapped_column(Text)
     status: Mapped[str] = mapped_column(String(24), default="published")
     training_consent: Mapped[bool] = mapped_column(Boolean, default=False)
+    owner_token_hash: Mapped[str | None] = mapped_column(String(64), nullable=True, index=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, index=True)
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, onupdate=utcnow)
 

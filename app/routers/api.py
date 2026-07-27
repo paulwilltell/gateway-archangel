@@ -16,7 +16,8 @@ from app.routers.common import (
     record_consent,
     require_moderator,
 )
-from app.schemas import ChatRequest, PostCreate, PostOut, ReplyCreate, ReportCreate
+from app.ownership import new_token, token_matches
+from app.schemas import ChatRequest, OwnershipAction, PostCreate, PostOut, ReplyCreate, ReportCreate
 
 router = APIRouter(prefix="/api/v1", tags=["api"])
 
@@ -55,6 +56,7 @@ def create_post(request: Request, payload: PostCreate, background_tasks: Backgro
         raise HTTPException(422, "Post exceeds configured maximum length")
     enforce_rate_limit(request, "post")
     enforce_content_policy(payload.title, payload.body)
+    owner_token, owner_hash = new_token()
     with request.app.state.db.session() as db:
         user = get_or_create_user(db, payload.author_name)
         post = Post(
@@ -62,6 +64,7 @@ def create_post(request: Request, payload: PostCreate, background_tasks: Backgro
             title=payload.title,
             body=payload.body,
             training_consent=payload.training_consent,
+            owner_token_hash=owner_hash,
         )
         db.add(post)
         db.flush()
@@ -75,7 +78,15 @@ def create_post(request: Request, payload: PostCreate, background_tasks: Backgro
         )
         post_id = post.id
     background_tasks.add_task(_run_analysis, request, "post", post_id)
-    return {"id": post_id, "analysis_status": "queued"}
+    return {
+        "id": post_id,
+        "analysis_status": "queued",
+        "owner_token": owner_token,
+        "owner_token_notice": (
+            "Save this token. It is shown once and is the only way to withdraw this "
+            "post or its research consent later — there are no accounts to recover it with."
+        ),
+    }
 
 
 @router.post("/posts/{post_id}/replies", status_code=status.HTTP_201_CREATED)
@@ -85,6 +96,7 @@ def create_reply(request: Request, post_id: str, payload: ReplyCreate, backgroun
         raise HTTPException(422, "Reply exceeds configured maximum length")
     enforce_rate_limit(request, "reply")
     enforce_content_policy(payload.body)
+    owner_token, owner_hash = new_token()
     with request.app.state.db.session() as db:
         post = db.get(Post, post_id)
         if not post:
@@ -95,6 +107,7 @@ def create_reply(request: Request, post_id: str, payload: ReplyCreate, backgroun
             author_id=user.id,
             body=payload.body,
             training_consent=payload.training_consent,
+            owner_token_hash=owner_hash,
         )
         db.add(reply)
         db.flush()
@@ -108,7 +121,7 @@ def create_reply(request: Request, post_id: str, payload: ReplyCreate, backgroun
         )
         reply_id = reply.id
     background_tasks.add_task(_run_analysis, request, "reply", reply_id)
-    return {"id": reply_id, "analysis_status": "queued"}
+    return {"id": reply_id, "analysis_status": "queued", "owner_token": owner_token}
 
 
 @router.get("/analysis/{target_type}/{target_id}")
@@ -124,6 +137,37 @@ def get_analysis(request: Request, target_type: str, target_id: str):
         if not row:
             raise HTTPException(404, "Analysis not found")
         return analysis_to_dict(row)
+
+
+@router.post("/ownership/{target_type}/{target_id}/withdraw")
+def withdraw_content(request: Request, target_type: str, target_id: str, payload: OwnershipAction):
+    """Withdraw your own post or reply using the ownership token you were
+    shown when you published it. No account exists to prove authorship;
+    possession of the token is the proof. See app/ownership.py."""
+    if target_type not in {"post", "reply"}:
+        raise HTTPException(422, "target_type must be post or reply")
+    with request.app.state.db.session() as db:
+        model = Post if target_type == "post" else Reply
+        target = db.get(model, target_id)
+        if not target:
+            raise HTTPException(404, "Content not found")
+        if not token_matches(payload.owner_token, target.owner_token_hash):
+            raise HTTPException(403, "That ownership token does not match this content.")
+        if payload.action == "delete":
+            target.status = "withdrawn_by_author"
+            target.training_consent = False
+        else:
+            target.training_consent = False
+        db.add(
+            AuditEvent(
+                event_type=f"author_{payload.action}",
+                actor_type="author",
+                target_type=target_type,
+                target_id=target_id,
+                details_json=json.dumps({"action": payload.action}),
+            )
+        )
+        return {"id": target_id, "action": payload.action, "status": target.status}
 
 
 @router.post("/archangel/chat")
@@ -275,7 +319,7 @@ def rerun_analysis(request: Request, target_type: str, target_id: str):
         raise HTTPException(422, "target_type must be post or reply")
     with request.app.state.db.session() as db:
         try:
-            row = analyze_target(db, request.app.state.settings, target_type, target_id)
+            row = analyze_target(db, request.app.state.settings, target_type, target_id, force=True)
         except LookupError:
             raise HTTPException(404, "Target not found")
         return analysis_to_dict(row)

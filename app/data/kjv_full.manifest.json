@@ -1,0 +1,15 @@
+{
+  "corpus_version": "kjv-1769-full-2026-07",
+  "translation": "King James Version (1769)",
+  "license": "Public Domain in the United States",
+  "source": "https://github.com/scrollmapper/bible_databases",
+  "source_file": "kjv_full_raw.json",
+  "source_sha256": "f0b09dc49dfb97bb84f03aae1fbf026485048c3cab31a7a41017e2d86ac1d11c",
+  "output_sha256": "b209d7297149e31c3693c8474b4d169119f4875db0c55bf03763bc1664801ecb",
+  "verse_count": 31102,
+  "book_count": 66,
+  "verses_with_supplied_words": 1,
+  "builder": "scripts/build_kjv_corpus.py",
+  "built_on": "2026-07-26",
+  "notes": "Translator-supplied words (square brackets in 1769 printings) are removed from display text and recorded as character spans in supplied_word_spans."
+}

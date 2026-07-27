@@ -33,7 +33,7 @@ from dataclasses import dataclass, field
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from app.analysis.retrieval import extract_references, retrieve_evidence
+from app.analysis.retrieval import extract_references, retrieval_context, retrieve_evidence
 from app.config import Settings
 from app.lexicon import lexical_context
 from app.models import BibleVerse
@@ -73,6 +73,14 @@ SCRIPTURE DISCIPLINE:
    present the main readings rather than ruling for one tradition.
 8. Read Scripture in context. Point out proof-texting gently, including the
    person's own.
+
+CONTEXT:
+7b. A `context_and_counterpassages` payload supplies the verses surrounding
+   each citation and passages the tradition holds in tension with them. Read
+   every verse inside its supplied context — verse divisions are a later
+   editorial imposition. If the person's question rests on one side of a
+   supplied tension, show them the other side rather than answering from one
+   alone. Where the tension is a historically disputed reading, present both.
 
 WORD MEANING:
 8b. A `research_layer` accompanies each message with KJV-era English drift
@@ -183,6 +191,7 @@ def run_chat_turn(db: Session, settings: Settings, messages: list[dict]) -> Chat
         {
             "approved_kjv_evidence": evidence_payload,
             "research_layer": lexical_context(latest, [row.text for row in evidence_rows]),
+            "context_and_counterpassages": retrieval_context(db, evidence_rows),
             "platform_safety_assessment": {
                 "level": safety.level,
                 "category": safety.category,

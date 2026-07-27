@@ -49,7 +49,12 @@ class Settings(BaseSettings):
     archangel_engine_version: str = "archangel-foundation-0.1.0"
     archangel_strict_corpus_only: bool = True
     archangel_model: str | None = None
-    analysis_timeout_seconds: float = 45.0
+    # Analysis prompts carry evidence, context windows, counterpassages, and
+    # lexical data, so a thorough pass legitimately takes minutes. Analysis
+    # runs in a background task, so a generous ceiling costs the reader
+    # nothing; too tight a value silently degrades every post to the
+    # deterministic analyzer.
+    analysis_timeout_seconds: float = 240.0
 
     anthropic_api_key: str | None = None
     anthropic_model: str = "claude-opus-5"

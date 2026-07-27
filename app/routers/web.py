@@ -11,6 +11,7 @@ from sqlalchemy.orm import joinedload, selectinload
 
 from app.analysis.engine import analysis_to_dict, analyze_target
 from app.models import Analysis, AuditEvent, ContentReport, Post, Reply
+from app.ownership import new_token
 from app.policy import POLICY_CATEGORIES
 from app.routers.common import (
     anonymous_pseudonym,
@@ -94,11 +95,13 @@ def create_post(
     enforce_rate_limit(request, "post")
     enforce_content_policy(title, body)
 
+    owner_token, owner_hash = new_token()
     with request.app.state.db.session() as db:
         if post_anonymously:
             author_name = anonymous_pseudonym(db)
         user = get_or_create_user(db, author_name)
         post = Post(
+            owner_token_hash=owner_hash,
             author_id=user.id,
             title=title,
             body=body,
@@ -117,11 +120,17 @@ def create_post(
         post_id = post.id
 
     background_tasks.add_task(_run_analysis, request, "post", post_id)
-    return RedirectResponse(url=f"/posts/{post_id}", status_code=303)
+    # Rendered directly rather than redirected: an ownership token in a URL
+    # would persist in browser history and referrer headers.
+    return _render_post(request, post_id, owner_token=owner_token)
 
 
 @router.get("/posts/{post_id}", response_class=HTMLResponse)
 def post_detail(request: Request, post_id: str):
+    return _render_post(request, post_id)
+
+
+def _render_post(request: Request, post_id: str, owner_token: str | None = None):
     with request.app.state.db.session() as db:
         post = db.scalar(
             select(Post)
@@ -142,6 +151,7 @@ def post_detail(request: Request, post_id: str):
                 "analyses": analyses,
                 "settings": request.app.state.settings,
                 "reported": request.query_params.get("reported") == "1",
+                "owner_token": owner_token,
             },
         )
 
@@ -166,6 +176,7 @@ def create_reply(
     enforce_rate_limit(request, "reply")
     enforce_content_policy(body)
 
+    reply_owner_token, reply_owner_hash = new_token()
     with request.app.state.db.session() as db:
         post = db.get(Post, post_id)
         if not post or post.status != "published":
@@ -174,6 +185,7 @@ def create_reply(
             author_name = anonymous_pseudonym(db)
         user = get_or_create_user(db, author_name)
         reply = Reply(
+            owner_token_hash=reply_owner_hash,
             post_id=post_id,
             author_id=user.id,
             body=body,
@@ -192,7 +204,7 @@ def create_reply(
         reply_id = reply.id
 
     background_tasks.add_task(_run_analysis, request, "reply", reply_id)
-    return RedirectResponse(url=f"/posts/{post_id}#reply-{reply_id}", status_code=303)
+    return _render_post(request, post_id, owner_token=reply_owner_token)
 
 
 @router.post("/posts/{post_id}/report")

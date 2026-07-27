@@ -16,6 +16,15 @@
 
   {{ analysis_panel(analyses.get(('post', post.id))) }}
 
+  {% if owner_token %}
+  <div class="owner-token-card" role="status">
+    <strong>Save this ownership token — it is shown once.</strong>
+    <code class="owner-token">{{ owner_token }}</code>
+    <p>Gateway has no accounts, so this token is the only proof that these words are yours. With it you can withdraw this contribution or revoke its research consent later. The server stores only a hash of it, so it links to this one contribution and nothing else — and nobody, including the operator, can recover it for you if it is lost.</p>
+    <p class="owner-token-how">To use it: <code>POST /api/v1/ownership/post/{{ post.id }}/withdraw</code> with <code>{"owner_token": "…", "action": "delete"}</code> — or <code>"withdraw_consent"</code> to keep the post but revoke research use.</p>
+  </div>
+  {% endif %}
+
   {% if reported %}
   <div class="empty-state" role="status"><h3>Report received.</h3><p>A human moderator will review this content against the content policy. Viewpoints are never removed.</p></div>
   {% endif %}

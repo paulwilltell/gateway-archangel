@@ -44,6 +44,7 @@ def analyze_with_anthropic(
     evidence: list[dict[str, str]],
     safety: dict[str, Any],
     lexical: dict[str, Any] | None = None,
+    context: dict[str, Any] | None = None,
 ) -> AnalysisResult:
     if not settings.anthropic_api_key:
         raise ProviderError("ANTHROPIC_API_KEY is required for the anthropic analyzer")
@@ -63,6 +64,7 @@ def analyze_with_anthropic(
             "approved_biblical_evidence": evidence,
             "platform_safety_assessment": safety,
             "research_layer": lexical or {},
+            "context_and_counterpassages": context or {},
             "strict_corpus_only": settings.archangel_strict_corpus_only,
         },
         ensure_ascii=False,

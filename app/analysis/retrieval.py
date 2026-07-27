@@ -47,6 +47,67 @@ THEME_REFERENCES: tuple[tuple[tuple[str, ...], tuple[str, ...]], ...] = (
     (("love", "kindness", "compassion"), ("1 Corinthians 13:4", "John 13:34", "Micah 6:8")),
 )
 
+# Curated counterpassage index — passages the tradition has long held in
+# tension. Supplying these alongside a retrieved verse is what separates
+# analysis from proof-texting: a claim resting on one side of a tension must
+# be told the other side exists. This mapping is an EDITORIAL artifact of the
+# platform (versioned below, shown on the Method page), not a discovery in the
+# text, and listing two passages together asserts tension, never that one
+# defeats the other.
+COUNTERPASSAGE_VERSION = "counterpassage-index-v1-2026-07"
+COUNTERPASSAGES: tuple[tuple[tuple[str, ...], tuple[str, ...], str], ...] = (
+    (
+        ("Ephesians 2:8", "Ephesians 2:9", "Romans 3:28", "Galatians 2:16"),
+        ("James 2:17", "James 2:24", "Matthew 7:21"),
+        "Faith and works: justification apart from works, held against faith without works being dead.",
+    ),
+    (
+        ("Malachi 3:10", "Luke 6:38", "Proverbs 3:9"),
+        ("1 Timothy 6:9", "1 Timothy 6:10", "Matthew 6:19", "Luke 12:15", "Job 1:21"),
+        "Giving and provision, held against warnings that wealth is not a measure of favor.",
+    ),
+    (
+        ("Matthew 6:14", "Ephesians 4:32", "Colossians 3:13"),
+        ("Luke 17:3", "Matthew 18:15", "Proverbs 22:3", "Romans 12:18"),
+        "Forgiveness commanded, held against rebuke, conditions, and prudence about repeated harm.",
+    ),
+    (
+        ("Romans 13:1", "1 Peter 2:13"),
+        ("Acts 5:29", "Daniel 3:18", "Exodus 1:17"),
+        "Submission to governing authority, held against obedience to God over men.",
+    ),
+    (
+        ("Acts 2:17", "Joel 2:28", "Numbers 12:6"),
+        ("Deuteronomy 13:1", "Deuteronomy 13:3", "Jeremiah 23:16", "1 John 4:1", "1 Thessalonians 5:21"),
+        "Dreams and visions as divine communication, held against commands to test every such claim.",
+    ),
+    (
+        ("Romans 12:19", "Matthew 5:39", "Matthew 5:44"),
+        ("Romans 13:4", "Psalms 82:3", "Proverbs 31:8"),
+        "Personal non-retaliation, held against the pursuit of justice and defense of the wronged.",
+    ),
+    (
+        ("Mark 16:16", "Acts 2:38", "1 Peter 3:21"),
+        ("Luke 23:43", "Romans 10:9", "Ephesians 2:8"),
+        "Baptism language, held against passages read as salvation apart from it. Historically disputed.",
+    ),
+    (
+        ("1 Corinthians 14:34", "1 Timothy 2:12"),
+        ("Galatians 3:28", "Acts 18:26", "Romans 16:1", "Judges 4:4", "Joel 2:28"),
+        "Restriction passages, held against women teaching, leading, and prophesying. Historically disputed.",
+    ),
+    (
+        ("Proverbs 22:6", "Proverbs 13:24"),
+        ("Ezekiel 18:20", "Ephesians 6:4"),
+        "Proverbs as general wisdom, held against passages denying they are guarantees.",
+    ),
+    (
+        ("John 14:14", "Matthew 21:22", "Mark 11:24"),
+        ("1 John 5:14", "James 4:3", "2 Corinthians 12:8", "2 Corinthians 12:9"),
+        "Promises about prayer, held against the will-of-God condition and unanswered petition.",
+    ),
+)
+
 STOPWORDS = frozenset(
     """
     a about above after again against all am an and any are as at be because been
@@ -165,6 +226,79 @@ def retrieve_evidence(db: Session, text: str, limit: int = 10) -> list[BibleVers
     rows = db.scalars(select(BibleVerse).where(BibleVerse.reference.in_(requested))).all()
     by_ref = {row.reference: row for row in rows}
     return [by_ref[ref] for ref in requested if ref in by_ref]
+
+
+def context_window(db: Session, verse: BibleVerse, before: int = 2, after: int = 2) -> list[dict]:
+    """Neighbouring verses around a retrieved passage.
+
+    Verse divisions were imposed on these documents centuries after they were
+    written, so an exactly-quoted verse can still be badly misapplied. Every
+    retrieved passage therefore travels with the sentences around it.
+    """
+    low = max(1, verse.verse - before)
+    rows = db.scalars(
+        select(BibleVerse)
+        .where(
+            BibleVerse.book == verse.book,
+            BibleVerse.chapter == verse.chapter,
+            BibleVerse.verse >= low,
+            BibleVerse.verse <= verse.verse + after,
+        )
+        .order_by(BibleVerse.verse)
+    ).all()
+    return [
+        {"reference": row.reference, "text": row.text, "is_cited_verse": row.reference == verse.reference}
+        for row in rows
+    ]
+
+
+def counterpassages_for(db: Session, references: list[str]) -> list[dict]:
+    """Passages standing in tension with what was retrieved.
+
+    A claim resting on one side of a long-standing tension must be shown the
+    other side. Returns the actual corpus text, so the model reasons over
+    verses rather than over a summary of them.
+    """
+    retrieved = set(references)
+    out: list[dict] = []
+    for side_a, side_b, description in COUNTERPASSAGES:
+        for near, far in ((side_a, side_b), (side_b, side_a)):
+            if not retrieved & set(near):
+                continue
+            rows = db.scalars(select(BibleVerse).where(BibleVerse.reference.in_(far))).all()
+            if not rows:
+                continue
+            out.append(
+                {
+                    "tension": description,
+                    "triggered_by": sorted(retrieved & set(near)),
+                    "passages": [{"reference": r.reference, "text": r.text} for r in rows],
+                }
+            )
+            break
+    return out[:4]
+
+
+def retrieval_context(db: Session, evidence_rows: list[BibleVerse]) -> dict:
+    """The full contextual payload: each cited verse with its surrounding
+    verses, plus counterpassages standing in tension with the set."""
+    references = [row.reference for row in evidence_rows]
+    return {
+        "note": (
+            "Verse divisions are a later editorial imposition; read each cited verse inside "
+            "the surrounding context supplied here. Counterpassages are passages the Christian "
+            "tradition has long held in tension with the retrieved ones — they are supplied so "
+            "a conclusion is not drawn from one side alone, not because they defeat it. The "
+            "counterpassage index is an editorial artifact of this platform, not a discovery "
+            "in the text."
+        ),
+        "counterpassage_index_version": COUNTERPASSAGE_VERSION,
+        "context_windows": [
+            {"cited": row.reference, "surrounding": context_window(db, row)}
+            for row in evidence_rows[:6]
+        ],
+        "counterpassages": counterpassages_for(db, references),
+    }
 
 
 def _build_fts_index(db: Session) -> None:

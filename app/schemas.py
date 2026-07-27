@@ -64,6 +64,11 @@ class ChatRequest(BaseModel):
     messages: list[ChatMessage] = Field(min_length=1, max_length=24)
 
 
+class OwnershipAction(BaseModel):
+    owner_token: str = Field(min_length=8, max_length=200)
+    action: str = Field(default="delete", pattern="^(delete|withdraw_consent)$")
+
+
 class ReportCreate(BaseModel):
     target_type: str = Field(pattern="^(post|reply)$")
     target_id: str = Field(min_length=1, max_length=36)

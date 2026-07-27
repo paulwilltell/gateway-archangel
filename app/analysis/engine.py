@@ -15,7 +15,7 @@ from app.analysis.providers import (
     analyze_with_local_openai_compatible,
     analyze_with_openai,
 )
-from app.analysis.retrieval import retrieve_evidence
+from app.analysis.retrieval import retrieval_context, retrieve_evidence
 from app.config import Settings
 from app.lexicon import lexical_context
 from app.loom_bridge import verify_with_loom
@@ -72,6 +72,7 @@ def _provider_analysis(
     evidence_payload: list[dict[str, str]],
     safety_payload: dict,
     lexical_payload: dict | None = None,
+    context_payload: dict | None = None,
 ) -> AnalysisResult:
     if settings.archangel_analyzer == "anthropic":
         return analyze_with_anthropic(
@@ -80,6 +81,7 @@ def _provider_analysis(
             evidence=evidence_payload,
             safety=safety_payload,
             lexical=lexical_payload,
+            context=context_payload,
         )
     if settings.archangel_analyzer == "openai":
         return analyze_with_openai(
@@ -275,11 +277,25 @@ def _queue_policy_review(db: Session, target: TargetContent, result: AnalysisRes
     )
 
 
-def analyze_target(db: Session, settings: Settings, target_type: str, target_id: str) -> Analysis:
+def analyze_target(
+    db: Session,
+    settings: Settings,
+    target_type: str,
+    target_id: str,
+    *,
+    force: bool = False,
+) -> Analysis:
+    """Analyze one post or reply.
+
+    Results are cached by (content, engine version, corpus version), so
+    unchanged content is not re-analyzed. ``force`` bypasses that cache — it
+    is what the rerun endpoint needs, since re-running an unchanged post is
+    exactly how you test a prompt or model change.
+    """
     target = load_target(db, target_type, target_id)
     digest = _content_hash(target.text)
 
-    latest = db.scalar(
+    latest = None if force else db.scalar(
         select(Analysis)
         .where(
             Analysis.target_type == target_type,
@@ -323,8 +339,14 @@ def analyze_target(db: Session, settings: Settings, target_type: str, target_id:
     else:
         try:
             lexical_payload = lexical_context(target.text, [row.text for row in evidence_rows])
+            context_payload = retrieval_context(db, evidence_rows)
             result = _provider_analysis(
-                settings, target.text, evidence_payload, safety_payload, lexical_payload
+                settings,
+                target.text,
+                evidence_payload,
+                safety_payload,
+                lexical_payload,
+                context_payload,
             )
             result = _enforce_evidence_boundary(result, evidence_rows)
         except Exception as exc:  # provider failure must not block the safety boundary
