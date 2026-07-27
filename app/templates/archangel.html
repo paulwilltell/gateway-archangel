@@ -1,0 +1,148 @@
+{% extends "base.html" %}
+{% block title %}Talk with Archangel · Gateway{% endblock %}
+{% block content %}
+<div class="chat-shell">
+  <section class="chat-intro">
+    <span class="eyebrow">THE THRESHOLD</span>
+    <h1>Talk with <span>Archangel</span></h1>
+    <p>Bring a question, a decision, or a burden. Archangel reasons from Scripture on the table — labeling what is command, what is principle, what is wisdom, and what is unknown. It is a tool: not God, not a pastor, not a prophet.</p>
+    <div class="chat-guarantees">
+      <span>◈ Never stored — closes with this tab</span>
+      <span>◈ KJV evidence shown verbatim</span>
+      <span>◈ Certainty labeled, never invented</span>
+    </div>
+  </section>
+
+  <section class="chat-window" aria-live="polite">
+    <div class="chat-messages" id="chat-messages">
+      <div class="chat-msg chat-msg-archangel">
+        <div class="chat-msg-label">ARCHANGEL</div>
+        <div class="chat-msg-body">Where are you today? Bring what is actually on your heart — a decision you are facing, a passage you do not understand, something you need to repair. I will reason with you from Scripture and tell you honestly where it speaks and where it is silent.</div>
+      </div>
+    </div>
+    <div class="chat-evidence" id="chat-evidence" hidden>
+      <h4>SCRIPTURE ON THE TABLE</h4>
+      <div id="chat-evidence-list"></div>
+    </div>
+    <form class="chat-form" id="chat-form">
+      <textarea id="chat-input" rows="2" maxlength="2000" required
+        placeholder="Speak plainly. Archangel answers from Scripture, not from itself."></textarea>
+      <button type="submit" id="chat-send">Send</button>
+    </form>
+    <div class="chat-footnote">Conversations are not saved anywhere. Refreshing this page erases everything. In an emergency call {{ settings.emergency_number }}; crisis line {{ settings.crisis_number }}.</div>
+  </section>
+</div>
+
+<script>
+(function () {
+  const form = document.getElementById("chat-form");
+  const input = document.getElementById("chat-input");
+  const sendBtn = document.getElementById("chat-send");
+  const messagesEl = document.getElementById("chat-messages");
+  const evidenceWrap = document.getElementById("chat-evidence");
+  const evidenceList = document.getElementById("chat-evidence-list");
+  const history = [];
+
+  function addMessage(role, text, extraClass) {
+    const wrap = document.createElement("div");
+    wrap.className = "chat-msg " + (role === "user" ? "chat-msg-user" : "chat-msg-archangel") + (extraClass ? " " + extraClass : "");
+    const label = document.createElement("div");
+    label.className = "chat-msg-label";
+    label.textContent = role === "user" ? "YOU" : "ARCHANGEL";
+    const body = document.createElement("div");
+    body.className = "chat-msg-body";
+    body.textContent = text;
+    wrap.append(label, body);
+    messagesEl.appendChild(wrap);
+    messagesEl.scrollTop = messagesEl.scrollHeight;
+    return wrap;
+  }
+
+  function addSafetyBanner(safety) {
+    if (!safety || safety.level === "none" || !safety.display_message) return;
+    const banner = document.createElement("div");
+    banner.className = "chat-safety " + (safety.level === "immediate" ? "safety-immediate" : "safety-urgent");
+    banner.innerHTML = "<strong>Please reach a human first.</strong>";
+    const p = document.createElement("p");
+    p.textContent = safety.display_message + (safety.resources.length ? " — " + safety.resources.join(" · ") : "");
+    banner.appendChild(p);
+    messagesEl.appendChild(banner);
+    messagesEl.scrollTop = messagesEl.scrollHeight;
+  }
+
+  function addCitations(messageEl, citations) {
+    if (!citations || !citations.length) return;
+    const row = document.createElement("div");
+    row.className = "citation-row";
+    citations.forEach(function (c) {
+      const chip = document.createElement("span");
+      chip.className = "citation-chip " + (c.attested ? "citation-verified" : "citation-memory");
+      chip.textContent = (c.attested ? "✓ " : "⚠ ") + c.reference + (c.attested ? "" : " — from memory, not verified");
+      if (c.attested && c.text) chip.title = c.text;
+      row.appendChild(chip);
+    });
+    messageEl.appendChild(row);
+  }
+
+  function showEvidence(evidence) {
+    evidenceList.textContent = "";
+    if (!evidence || !evidence.length) { evidenceWrap.hidden = true; return; }
+    evidence.forEach(function (v) {
+      const q = document.createElement("blockquote");
+      const ref = document.createElement("strong");
+      ref.textContent = v.reference;
+      const p = document.createElement("p");
+      p.textContent = v.text;
+      q.append(ref, p);
+      evidenceList.appendChild(q);
+    });
+    evidenceWrap.hidden = false;
+  }
+
+  form.addEventListener("submit", async function (event) {
+    event.preventDefault();
+    const text = input.value.trim();
+    if (!text || sendBtn.disabled) return;
+    input.value = "";
+    addMessage("user", text);
+    history.push({ role: "user", content: text });
+
+    sendBtn.disabled = true;
+    const thinking = addMessage("assistant", "…", "chat-thinking");
+    try {
+      const response = await fetch("/api/v1/archangel/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ messages: history.slice(-24) }),
+      });
+      const data = await response.json();
+      thinking.remove();
+      if (!response.ok) {
+        addMessage("assistant", data.detail || "Archangel is unavailable right now.", "chat-error");
+        history.pop();
+        return;
+      }
+      addSafetyBanner(data.safety);
+      const replyEl = addMessage("assistant", data.reply);
+      addCitations(replyEl, data.citations);
+      history.push({ role: "assistant", content: data.reply });
+      showEvidence(data.evidence);
+    } catch (err) {
+      thinking.remove();
+      addMessage("assistant", "Connection failed. Your words were not stored anywhere.", "chat-error");
+      history.pop();
+    } finally {
+      sendBtn.disabled = false;
+      input.focus();
+    }
+  });
+
+  input.addEventListener("keydown", function (event) {
+    if (event.key === "Enter" && !event.shiftKey) {
+      event.preventDefault();
+      form.requestSubmit();
+    }
+  });
+})();
+</script>
+{% endblock %}

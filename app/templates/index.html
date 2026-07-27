@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+{% from "_analysis.html" import analysis_panel %}
+{% block title %}Gateway · Christian discussion, Scripture-measured analysis{% endblock %}
+{% block content %}
+<section class="hero">
+  <div class="hero-copy">
+    <div class="eyebrow">A HUMAN COMMUNITY WITH A SILENT ANALYSIS LAYER</div>
+    <h1>Bring the thought.<br><span>Let Scripture test it.</span></h1>
+    <p>People post. People reply. Archangel never enters the conversation as a voice—it maps claims, biblical support, context, reasoning risks, and safety boundaries beneath it.</p>
+    <div class="hero-pills">
+      <span>Humans speak</span><span>Scripture governs</span><span>AI analyzes</span><span>No auto-training</span>
+    </div>
+  </div>
+  <div class="gateway-visual" aria-hidden="true">
+    <div class="arch arch-outer"></div>
+    <div class="arch arch-middle"></div>
+    <div class="arch arch-inner"></div>
+    <div class="cross-line vertical"></div>
+    <div class="cross-line horizontal"></div>
+    <div class="threshold">ENTER WITH TRUTH</div>
+  </div>
+</section>
+
+<div class="community-layout">
+  <section class="main-column">
+    <details class="composer" open>
+      <summary>
+        <span><strong>Open a discussion</strong><small>Archangel analyzes the post; it does not answer it.</small></span>
+        <span class="plus">+</span>
+      </summary>
+      <form action="/posts" method="post" data-count-form>
+        <div class="form-grid">
+          <label>Display name<input name="author_name" minlength="2" maxlength="80" placeholder="Use a pen name — it is public forever">
+            <span class="pen-name-hint">Gateway stores no identity, but the name you type is public. A pen name is wise.</span>
+          </label>
+          <label>Discussion title<input name="title" required minlength="5" maxlength="180" placeholder="State the actual claim or question"></label>
+        </div>
+        <label class="consent-row anon-row">
+          <input type="checkbox" name="post_anonymously" value="true">
+          <span><strong>Post anonymously</strong> — a random pen name (e.g. Sojourner-1847) is assigned; nothing links it to you.</span>
+        </label>
+        <label>Your thought
+          <textarea name="body" required minlength="10" maxlength="{{ settings.max_post_chars }}" rows="7" placeholder="Share the thought, reasoning, Scripture references, and the real-life context..."></textarea>
+          <span class="char-count">0 / {{ settings.max_post_chars }}</span>
+        </label>
+        <label class="consent-row">
+          <input type="checkbox" name="training_consent" value="true">
+          <span><strong>Separate, optional research consent</strong> — after privacy and biblical-alignment screening, this public post may be queued for human theological review. It will never train Archangel automatically.</span>
+        </label>
+        <div class="form-actions">
+          <span>Emergency and crisis signals trigger the safety layer before biblical analysis.</span>
+          <button type="submit">Publish discussion</button>
+        </div>
+      </form>
+    </details>
+
+    <div class="section-heading">
+      <div><span>THE GATEWAY FEED</span><h2>Christian thought in the open</h2></div>
+      <div class="feed-status"><span class="live-dot"></span>{{ posts|length }} discussions</div>
+    </div>
+
+    <div class="feed">
+      {% for post in posts %}
+        <article class="post-card">
+          <div class="post-meta">
+            <span class="avatar">{{ post.author.display_name[0]|upper }}</span>
+            <div><strong>{{ post.author.display_name }}</strong><small>{{ post.created_at.strftime('%B %d, %Y · %I:%M %p') }}</small></div>
+            <span class="human-label">HUMAN POST</span>
+          </div>
+          <a class="post-link" href="/posts/{{ post.id }}">
+            <h3>{{ post.title }}</h3>
+            <p>{{ post.body }}</p>
+          </a>
+          <div class="post-footer">
+            <a href="/posts/{{ post.id }}">{{ post.replies|length }} human repl{{ 'y' if post.replies|length == 1 else 'ies' }}</a>
+            <span>Analysis remains separate from the thread</span>
+          </div>
+          {{ analysis_panel(analyses.get(('post', post.id)), compact=true) }}
+        </article>
+      {% else %}
+        <div class="empty-state"><h3>The threshold is open.</h3><p>Publish the first discussion.</p></div>
+      {% endfor %}
+    </div>
+  </section>
+
+  <aside class="side-column">
+    <section class="side-card covenant-card">
+      <span class="side-kicker">ARCHANGEL COVENANT</span>
+      <h3>It analyzes. It does not become the voice.</h3>
+      <ol>
+        <li><b>1</b><span>Extract the actual claims.</span></li>
+        <li><b>2</b><span>Retrieve approved biblical evidence.</span></li>
+        <li><b>3</b><span>Separate text, inference, application, and uncertainty.</span></li>
+        <li><b>4</b><span>Expose context gaps and reasoning risks.</span></li>
+        <li><b>5</b><span>Never judge a person's soul.</span></li>
+      </ol>
+      <a href="/method">Read the complete method →</a>
+    </section>
+    <section class="side-card safety-card">
+      <span class="side-kicker">NON-NEGOTIABLE SAFETY</span>
+      <h3>Life and immediate danger come first.</h3>
+      <p>In the United States: emergency danger routes to <strong>{{ settings.emergency_number }}</strong>; suicidal crisis routes to call or text <strong>{{ settings.crisis_number }}</strong>. Scripture never replaces emergency or medical care.</p>
+    </section>
+    <section class="side-card corpus-card">
+      <span class="side-kicker">CORPUS STATE</span>
+      <dl>
+        <div><dt>Authority</dt><dd>KJV + approved Hebrew/Greek witnesses</dd></div>
+        <div><dt>Community</dt><dd>Interpretation only</dd></div>
+        <div><dt>Training</dt><dd>Consent + review only</dd></div>
+        <div><dt>Current mode</dt><dd>{{ settings.archangel_analyzer|replace('_', ' ') }}</dd></div>
+      </dl>
+    </section>
+  </aside>
+</div>
+{% endblock %}

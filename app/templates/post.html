@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+{% from "_analysis.html" import analysis_panel %}
+{% block title %}{{ post.title }} · Gateway{% endblock %}
+{% block content %}
+<div class="thread-shell">
+  <a class="back-link" href="/">← Back to Gateway</a>
+  <article class="thread-origin">
+    <div class="post-meta">
+      <span class="avatar large">{{ post.author.display_name[0]|upper }}</span>
+      <div><strong>{{ post.author.display_name }}</strong><small>{{ post.created_at.strftime('%B %d, %Y · %I:%M %p') }}</small></div>
+      <span class="human-label">HUMAN POST</span>
+    </div>
+    <h1>{{ post.title }}</h1>
+    <div class="thread-body">{{ post.body }}</div>
+  </article>
+
+  {{ analysis_panel(analyses.get(('post', post.id))) }}
+
+  {% if reported %}
+  <div class="empty-state" role="status"><h3>Report received.</h3><p>A human moderator will review this content against the content policy. Viewpoints are never removed.</p></div>
+  {% endif %}
+
+  <section class="reply-section">
+    <div class="section-heading">
+      <div><span>THE HUMAN THREAD</span><h2>{{ replies|length }} repl{{ 'y' if replies|length == 1 else 'ies' }}</h2></div>
+      <div class="human-only-note">Archangel is not a participant</div>
+    </div>
+
+    {% for reply in replies %}
+      <article class="reply-card" id="reply-{{ reply.id }}">
+        <div class="post-meta">
+          <span class="avatar">{{ reply.author.display_name[0]|upper }}</span>
+          <div><strong>{{ reply.author.display_name }}</strong><small>{{ reply.created_at.strftime('%B %d, %Y · %I:%M %p') }}</small></div>
+          <span class="human-label">HUMAN REPLY</span>
+        </div>
+        <div class="thread-body reply-body">{{ reply.body }}</div>
+        {{ analysis_panel(analyses.get(('reply', reply.id)), compact=true) }}
+      </article>
+    {% else %}
+      <div class="empty-state"><h3>No human reply yet.</h3><p>The analysis does not fill the silence. A person must answer.</p></div>
+    {% endfor %}
+  </section>
+
+  <section class="composer reply-composer">
+    <div class="composer-title"><strong>Add a human reply</strong><small>Address the person. Archangel will separately analyze the written reasoning.</small></div>
+    <form action="/posts/{{ post.id }}/replies" method="post" data-count-form>
+      <label>Display name<input name="author_name" minlength="2" maxlength="80" placeholder="Use a pen name — it is public forever"></label>
+      <label class="consent-row anon-row">
+        <input type="checkbox" name="post_anonymously" value="true">
+        <span><strong>Reply anonymously</strong> — a random pen name is assigned; nothing links it to you.</span>
+      </label>
+      <label>Reply
+        <textarea name="body" required minlength="2" maxlength="{{ settings.max_reply_chars }}" rows="6" placeholder="Reply with truth, charity, context, and Scripture where relevant..."></textarea>
+        <span class="char-count">0 / {{ settings.max_reply_chars }}</span>
+      </label>
+      <label class="consent-row">
+        <input type="checkbox" name="training_consent" value="true">
+        <span><strong>Optional research consent</strong> — only a public, non-sensitive, biblically aligned reply may be queued for human theological review.</span>
+      </label>
+      <div class="form-actions"><span>Your reply stays visibly human.</span><button type="submit">Publish reply</button></div>
+    </form>
+  </section>
+
+  <details class="report-details">
+    <summary>Report this post</summary>
+    <form action="/posts/{{ post.id }}/report" method="post">
+      <label>Reason
+        <select name="category" required>
+          <option value="sexual_content">Explicit sexual content</option>
+          <option value="abusive_content">Abuse or harassment of a person</option>
+          <option value="spam">Spam</option>
+          <option value="illegal">Illegal content</option>
+        </select>
+      </label>
+      <label>Details (optional)
+        <textarea name="details" maxlength="2000" rows="2" placeholder="What violates the policy?"></textarea>
+      </label>
+      <div class="form-actions">
+        <span>Disagreement is not a report reason — reply instead.</span>
+        <button type="submit">Send report</button>
+      </div>
+    </form>
+  </details>
+</div>
+{% endblock %}

@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block title %}Method · Gateway{% endblock %}
+{% block content %}
+<section class="document-hero">
+  <span>ARCHANGEL METHOD</span>
+  <h1>A fixed authority layer.<br>A transparent reasoning layer.</h1>
+  <p>Archangel is designed to expose how a conclusion was reached—not to impersonate revelation or become a digital priesthood.</p>
+</section>
+
+<section class="principle-grid">
+  <article><b>01</b><h3>Claim before conclusion</h3><p>The engine extracts what is actually being asserted before retrieving verses.</p></article>
+  <article><b>02</b><h3>Corpus before model</h3><p>Approved biblical evidence is retrieved first. A language model may organize that evidence, but may not invent new authority.</p></article>
+  <article><b>03</b><h3>Certainty is labeled</h3><p>Direct text, strong inference, wisdom application, disputed interpretation, and insufficient evidence remain distinct.</p></article>
+  <article><b>04</b><h3>People are not scored</h3><p>The platform evaluates written claims and reasoning—not salvation, spiritual rank, sincerity, or the hidden heart.</p></article>
+  <article><b>05</b><h3>Safety precedes theology</h3><p>Emergency and crisis referrals cannot be suppressed, delayed, or downgraded by the model.</p></article>
+  <article><b>06</b><h3>Every source keeps provenance</h3><p>Text, translation, language, license, version, retrieval date, and authority class stay attached to the evidence.</p></article>
+</section>
+
+<section class="method-flow">
+  <div class="section-heading"><div><span>THE ANALYSIS PIPELINE</span><h2>What happens beneath every post</h2></div></div>
+  <div class="flow-line">
+    <div><b>1</b><strong>Safety scan</strong><span>Immediate human danger routes first.</span></div>
+    <div><b>2</b><strong>Claim extraction</strong><span>Separate assertions from emotion and narrative.</span></div>
+    <div><b>3</b><strong>Scripture retrieval</strong><span>KJV plus approved Hebrew/Greek witnesses.</span></div>
+    <div><b>4</b><strong>Context testing</strong><span>Genre, speaker, audience, covenant, and canonical tension.</span></div>
+    <div><b>5</b><strong>Structured record</strong><span>No chatbot reply—only inspectable analysis.</span></div>
+    <div><b>6</b><strong>Loom verification</strong><span>A deterministic engine grounds every claim in the corpus; ungrounded textual support is withdrawn, with a traceable derivation.</span></div>
+    <div><b>7</b><strong>Training gate</strong><span>Consent, privacy, alignment, then human review.</span></div>
+  </div>
+</section>
+
+<section class="method-flow" id="policy">
+  <div class="section-heading"><div><span>CONTENT POLICY</span><h2>Free to post. Four narrow exceptions.</h2></div></div>
+  <p>Gateway is a free place for anyone to post. No account is required, and no viewpoint, theology, doctrine, or quality judgment is ever grounds for removal — Archangel analyzes reasoning; it does not censor. Content is refused or removed only for: <strong>explicit sexual material or solicitation</strong>, <strong>abuse or harassment directed at a person</strong>, <strong>spam</strong>, and <strong>illegal content</strong>. Testimony about abuse you suffered, confession of sin and temptation, and honest discussion of sexuality are welcome here and are not violations. Removal is done by a human; automated systems can only refuse unambiguous cases at submission or flag content for human review. Removed content is hidden, never silently deleted — the audit record remains.</p>
+</section>
+
+<section class="source-table-section">
+  <div class="section-heading"><div><span>SOURCE REGISTRY</span><h2>Authority and permission are not the same thing</h2></div></div>
+  <div class="source-table-wrap">
+    <table class="source-table">
+      <thead><tr><th>Source</th><th>Role</th><th>Authority class</th><th>Training rule</th></tr></thead>
+      <tbody>
+        {% for source in registry %}
+          <tr>
+            <td><strong>{{ source.name }}</strong><small>{{ source.conditions }}</small></td>
+            <td>{{ source.role }}</td>
+            <td><code>{{ source.authority }}</code></td>
+            <td><code>{{ source.training_allowed }}</code></td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,106 @@
+{% macro analysis_panel(analysis, compact=false) %}
+  {% if not analysis %}
+    <section class="analysis-panel pending-analysis" aria-label="Archangel analysis pending">
+      <div class="analysis-heading">
+        <span class="analysis-symbol">A</span>
+        <div><strong>Archangel analysis</strong><small>Queued beneath the human discussion</small></div>
+      </div>
+      <div class="scan-line"><span></span></div>
+    </section>
+  {% else %}
+    <section class="analysis-panel {{ 'compact' if compact else '' }}" aria-label="Archangel structured analysis">
+      <div class="analysis-heading">
+        <span class="analysis-symbol">A</span>
+        <div>
+          <strong>Archangel analysis</strong>
+          <small>Engine {{ analysis.engine_version }} · Corpus {{ analysis.corpus_version }}</small>
+        </div>
+        <span class="verdict verdict-{{ analysis.alignment }}">{{ analysis.alignment|replace('_', ' ') }}</span>
+      </div>
+
+      {% if analysis.safety and analysis.safety.level != 'none' %}
+        <div class="safety-banner safety-{{ analysis.safety.level }}">
+          <strong>Safety boundary · {{ analysis.safety.category|replace('_', ' ') }}</strong>
+          <p>{{ analysis.safety.display_message }}</p>
+          {% if analysis.safety.resources %}
+            <div class="resource-row">
+              {% for resource in analysis.safety.resources %}<span>{{ resource }}</span>{% endfor %}
+            </div>
+          {% endif %}
+        </div>
+      {% endif %}
+
+      <div class="analysis-metrics">
+        <div><span>Support level</span><strong>{{ analysis.support_level|replace('_', ' ') }}</strong></div>
+        <div><span>Confidence</span><strong>{{ (analysis.confidence * 100)|round|int }}%</strong></div>
+        <div><span>Mode</span><strong>{{ analysis.analyzer_mode|replace('_', ' ') }}</strong></div>
+      </div>
+
+      {% if analysis.loom_verification %}
+        {% set loom = analysis.loom_verification %}
+        <div class="loom-strip {{ 'loom-clean' if loom.summary.downgraded == 0 else 'loom-flagged' }}">
+          <span class="loom-mark">◈</span>
+          <span>
+            <strong>Loom verified</strong> — {{ loom.summary.grounded }}/{{ loom.summary.total_claims }}
+            claim{{ '' if loom.summary.total_claims == 1 else 's' }} grounded in the canonical corpus
+            {%- if loom.summary.downgraded %}; {{ loom.summary.downgraded }} downgraded (cited text not attested){% endif %}.
+          </span>
+          <span class="loom-engine">{{ loom.engine }} · deterministic</span>
+        </div>
+      {% endif %}
+
+      {% if analysis.claims %}
+        <div class="analysis-section">
+          <h4>Claim assessment</h4>
+          {% for claim in analysis.claims %}
+            <article class="claim-row">
+              <div class="claim-topline">
+                <span class="mini-verdict verdict-{{ claim.alignment }}">{{ claim.alignment }}</span>
+                <span>{{ claim.support_level|replace('_', ' ') }}</span>
+              </div>
+              {% if not compact %}<p class="claim-text">{{ claim.claim }}</p>{% endif %}
+              <p>{{ claim.rationale }}</p>
+            </article>
+          {% endfor %}
+        </div>
+      {% endif %}
+
+      {% if analysis.evidence %}
+        <div class="analysis-section">
+          <h4>Textual evidence</h4>
+          <div class="evidence-list">
+            {% for item in analysis.evidence[:4 if compact else 10] %}
+              <blockquote>
+                <div><strong>{{ item.reference }}</strong><span>{{ item.source_id }}</span></div>
+                <p>{{ item.text }}</p>
+              </blockquote>
+            {% endfor %}
+          </div>
+        </div>
+      {% endif %}
+
+      {% if not compact and (analysis.context_notes or analysis.reasoning_flags or analysis.limitations) %}
+        <div class="analysis-grid">
+          {% if analysis.context_notes %}
+            <div class="analysis-section">
+              <h4>Context notes</h4>
+              <ul>{% for item in analysis.context_notes %}<li>{{ item|replace('_', ' ') }}</li>{% endfor %}</ul>
+            </div>
+          {% endif %}
+          {% if analysis.reasoning_flags %}
+            <div class="analysis-section">
+              <h4>Reasoning flags</h4>
+              <ul>{% for item in analysis.reasoning_flags %}<li>{{ item|replace('_', ' ') }}</li>{% endfor %}</ul>
+            </div>
+          {% endif %}
+          {% if analysis.limitations %}
+            <div class="analysis-section">
+              <h4>Limits</h4>
+              <ul>{% for item in analysis.limitations %}<li>{{ item }}</li>{% endfor %}</ul>
+            </div>
+          {% endif %}
+        </div>
+      {% endif %}
+    </section>
+  {% endif %}
+{% endmacro %}

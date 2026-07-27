@@ -1,0 +1,27 @@
+[project]
+name = "gateway-archangel"
+version = "0.1.0"
+description = "A Christian discussion network with silent, structured biblical analysis."
+requires-python = ">=3.11"
+dependencies = [
+  "fastapi>=0.128,<1",
+  "uvicorn[standard]>=0.48,<1",
+  "sqlalchemy>=2.0.50,<3",
+  "pydantic>=2.13,<3",
+  "pydantic-settings>=2.14,<3",
+  "jinja2>=3.1,<4",
+  "python-multipart>=0.0.29,<1",
+  "httpx>=0.28,<1",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=9,<10"]
+postgres = ["psycopg[binary]>=3.2,<4"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+
+[tool.ruff]
+line-length = 120
+target-version = "py311"

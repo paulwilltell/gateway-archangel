@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Gateway is a Christian discussion network with silent, structured biblical analysis by Archangel.">
+  <meta name="color-scheme" content="dark">
+  <meta name="theme-color" content="#08090b">
+  <title>{% block title %}Gateway{% endblock %}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..700;1,9..144,300..700&family=Inter:ital,opsz,wght@0,14..32,300..800;1,14..32,300..800&display=swap">
+  <link rel="stylesheet" href="{{ url_for('static', path='app.css') }}">
+  <script defer src="{{ url_for('static', path='app.js') }}"></script>
+</head>
+<body>
+  <div class="ambient ambient-one"></div>
+  <div class="ambient ambient-two"></div>
+  <header class="site-header">
+    <a class="brand" href="/" aria-label="Gateway home">
+      <span class="brand-mark" aria-hidden="true">
+        <svg viewBox="0 0 64 64" role="img">
+          <path d="M13 54V29C13 18.5 21.5 10 32 10s19 8.5 19 19v25"/>
+          <path d="M22 54V30c0-5.5 4.5-10 10-10s10 4.5 10 10v24"/>
+          <path d="M8 54h48"/>
+          <path d="M32 3v8M28 7h8"/>
+        </svg>
+      </span>
+      <span>
+        <strong>GATEWAY</strong>
+        <small>ARCHANGEL ANALYSIS</small>
+      </span>
+    </a>
+    <nav aria-label="Primary navigation">
+      <a href="/">Community</a>
+      <a href="/archangel">Talk with Archangel</a>
+      <a href="/method">Method</a>
+      <a href="/data-consent">Data &amp; consent</a>
+      <a class="api-link" href="/docs">API</a>
+    </nav>
+  </header>
+
+  <main class="page-shell">
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer class="site-footer">
+    <div>
+      <strong>Gateway</strong> keeps the conversation human. <strong>Archangel</strong> records structured analysis beneath it.
+    </div>
+    <div class="footer-note">Not God, not an angel, not a pastor, not a prophet, and never a replacement for emergency or professional care.</div>
+    <div class="footer-note">Free to post, no account needed. Viewpoints are never moderated — <a href="/method#policy">content policy</a>.</div>
+  </footer>
+</body>
+</html>

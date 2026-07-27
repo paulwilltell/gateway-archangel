@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}Data & consent · Gateway{% endblock %}
+{% block content %}
+<section class="document-hero">
+  <span>DATA COVENANT</span>
+  <h1>Discussion is not automatic model training.</h1>
+  <p>A spiritual community must never hide a permanent training pipeline beneath vulnerable disclosure.</p>
+</section>
+
+<section class="policy-stack">
+  <article>
+    <span>DEFAULT</span><h2>No consent means no training copy.</h2>
+    <p>Posts can still be displayed and analyzed for the community. The content is not copied into the model-training candidate table.</p>
+  </article>
+  <article>
+    <span>SEPARATE CONSENT</span><h2>A checkbox is only the first gate.</h2>
+    <p>Consent does not guarantee inclusion. Private content, crisis material, medical information, identifying details, unsupported claims, mixed claims, and contradictions are excluded.</p>
+  </article>
+  <article>
+    <span>THEOLOGICAL REVIEW</span><h2>No content updates the model by itself.</h2>
+    <p>Eligible material is marked <code>pending_theological_review</code>. A qualified human review process must approve the source, interpretation, privacy state, and intended training use.</p>
+  </article>
+  <article>
+    <span>REVOCATION</span><h2>Deletion must reach derived datasets.</h2>
+    <p>A production deployment must maintain lineage so a revoked or deleted contribution can be removed from candidate sets, exports, evaluation sets, and later model versions where technically possible.</p>
+  </article>
+</section>
+
+<section class="boundary-box">
+  <h2>The literal Bible-only model requirement</h2>
+  <p>A hosted general-purpose language model has already been trained on broad human data. Strict retrieval can constrain what evidence it is allowed to use, but it cannot truthfully make those pretrained weights “Bible-only.” Literal compliance requires a separately trained or continued-pretrained model whose entire dataset is approved and provenance-tracked. This foundation does not pretend otherwise.</p>
+</section>
+{% endblock %}

@@ -1,0 +1,72 @@
+[
+  {
+    "id": "kjv_local",
+    "name": "King James Version — local canonical corpus",
+    "role": "Primary English presentation layer",
+    "authority": "canonical_translation",
+    "key_required": false,
+    "training_allowed": true,
+    "conditions": "Public domain in the United States; verify status in every deployment jurisdiction.",
+    "provenance_required": true
+  },
+  {
+    "id": "oshb",
+    "name": "Open Scriptures Hebrew Bible",
+    "role": "Hebrew text, lemmas, and morphology",
+    "authority": "original_language_textual_witness",
+    "key_required": false,
+    "training_allowed": "license_review_required",
+    "conditions": "WLC text is public domain; OSHB lemma and morphology data are CC BY 4.0 with attribution.",
+    "provenance_required": true
+  },
+  {
+    "id": "sblgnt",
+    "name": "SBL Greek New Testament",
+    "role": "Greek New Testament research corpus",
+    "authority": "original_language_textual_witness",
+    "key_required": false,
+    "training_allowed": "license_review_required",
+    "conditions": "CC BY 4.0; attribution required.",
+    "provenance_required": true
+  },
+  {
+    "id": "api_bible",
+    "name": "API.Bible",
+    "role": "Licensed translation retrieval and Bible metadata",
+    "authority": "content_provider",
+    "key_required": true,
+    "training_allowed": false,
+    "conditions": "Do not use retrieved translation text for training or long-term storage unless the exact translation license and plan expressly permit it.",
+    "provenance_required": true
+  },
+  {
+    "id": "bible_brain",
+    "name": "Bible Brain / Digital Bible Platform",
+    "role": "Multilingual text, audio, video, and fileset metadata",
+    "authority": "content_provider",
+    "key_required": true,
+    "training_allowed": false,
+    "conditions": "Use only within the granted developer license; downloadable content must remain within the authorized application where required.",
+    "provenance_required": true
+  },
+  {
+    "id": "sefaria",
+    "name": "Sefaria",
+    "role": "Structured Hebrew Bible and Jewish textual research",
+    "authority": "research_library",
+    "key_required": false,
+    "training_allowed": "dataset_specific_review_required",
+    "conditions": "Preserve version, language, attribution, and dataset-specific terms. Human commentary is not canonical authority.",
+    "provenance_required": true
+  },
+  {
+    "id": "community",
+    "name": "Gateway community discussions",
+    "role": "Human questions, testimony, interpretations, and lived application",
+    "authority": "human_interpretation_only",
+    "key_required": false,
+    "training_allowed": "explicit_consent_plus_alignment_plus_human_review",
+    "conditions": "Never treated as Scripture; never auto-trained; sensitive or non-aligned content is excluded.",
+    "provenance_required": true
+  }
+]
