@@ -15,10 +15,16 @@ from app.analysis.providers import (
     analyze_with_local_openai_compatible,
     analyze_with_openai,
 )
-from app.analysis.retrieval import retrieval_context, retrieve_evidence
+from app.analysis.prompt import SYSTEM_INSTRUCTIONS
+from app.analysis.retrieval import (
+    COUNTERPASSAGE_VERSION,
+    THEME_INDEX_VERSION,
+    retrieval_context,
+    retrieve_evidence,
+)
 from app.config import Settings
-from app.lexicon import lexical_context
-from app.loom_bridge import verify_with_loom
+from app.lexicon import LEXICAL_RULES, lexical_context, lexicon_source
+from app.loom_bridge import LOOM_ENGINE_VERSION, verify_with_loom
 from app.models import Analysis, AuditEvent, ContentReport, Post, Reply, TrainingCandidate
 from app.pii import scan_and_redact
 from app.safety import classify_safety
@@ -34,8 +40,35 @@ class TargetContent:
     status: str
 
 
+ANALYSIS_SCHEMA_VERSION = "archangel-analysis-schema-1"
+
+
 def _content_hash(text: str) -> str:
     return hashlib.sha256(text.encode("utf-8")).hexdigest()
+
+
+def build_provenance(settings: Settings, result: AnalysisResult) -> dict:
+    """Everything needed to reproduce or impeach this analysis.
+
+    A conclusion is only as trustworthy as the machinery that produced it, so
+    each record names its corpus, its retrieval and index versions, the exact
+    prompt (by hash), the model, and the deterministic engines involved. When
+    a past analysis looks wrong, this says which component to suspect.
+    """
+    return {
+        "analysis_schema_version": ANALYSIS_SCHEMA_VERSION,
+        "engine_version": settings.archangel_engine_version,
+        "analyzer_mode": result.analyzer_mode,
+        "model": settings.anthropic_model if result.analyzer_mode == "anthropic" else None,
+        "corpus_version": settings.corpus_version,
+        "theme_index_version": THEME_INDEX_VERSION,
+        "counterpassage_index_version": COUNTERPASSAGE_VERSION,
+        "lexicon_source": lexicon_source(),
+        "loom_engine": LOOM_ENGINE_VERSION,
+        "system_prompt_sha256": hashlib.sha256(SYSTEM_INSTRUCTIONS.encode("utf-8")).hexdigest(),
+        "lexical_rules_sha256": hashlib.sha256(LEXICAL_RULES.encode("utf-8")).hexdigest(),
+        "training_policy_version": settings.training_policy_version,
+    }
 
 
 def load_target(db: Session, target_type: str, target_id: str) -> TargetContent:
@@ -386,7 +419,11 @@ def analyze_target(
         engine_version=settings.archangel_engine_version,
         corpus_version=settings.corpus_version,
         result_json=json.dumps(
-            {**json.loads(result.model_dump_json()), "loom_verification": loom_verification}
+            {
+                **json.loads(result.model_dump_json()),
+                "loom_verification": loom_verification,
+                "provenance": build_provenance(settings, result),
+            }
         ),
         content_hash=digest,
     )

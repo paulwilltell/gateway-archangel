@@ -63,6 +63,10 @@ def _glossary() -> dict:
     return json.loads(GLOSSARY_PATH.read_text(encoding="utf-8"))
 
 
+def lexicon_source() -> str:
+    return _lexicon().get("source", "unavailable")
+
+
 def archaic_words_in(text: str) -> list[dict]:
     """KJV-era English words present in ``text`` whose sense has drifted."""
     words = _glossary().get("words", {})

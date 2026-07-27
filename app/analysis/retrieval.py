@@ -30,6 +30,8 @@ BOOK_ALIASES = {
     "song of solomon": "Song of Solomon",
 }
 
+THEME_INDEX_VERSION = "theme-index-v1-2026-07"
+
 # Curated topical index. These pairings are an editorial artifact of the
 # platform (documented on the Method page), not an output of the model. They
 # bridge modern vocabulary ("anxiety") to KJV vocabulary ("take no thought")
