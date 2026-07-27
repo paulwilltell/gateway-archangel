@@ -8,7 +8,7 @@ from pydantic import BaseModel, ConfigDict, Field, field_validator
 class PostCreate(BaseModel):
     author_name: str = Field(min_length=2, max_length=80)
     title: str = Field(min_length=5, max_length=180)
-    body: str = Field(min_length=10, max_length=8_000)
+    body: str = Field(min_length=10, max_length=16_000)
     training_consent: bool = False
 
     @field_validator("author_name", "title", "body")

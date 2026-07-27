@@ -72,7 +72,10 @@ class Settings(BaseSettings):
     crisis_number: str = "988"
     poison_control_number: str = "1-800-222-1222"
 
-    max_post_chars: int = Field(default=8_000, ge=200, le=50_000)
+    # Long-form theological writing is the point of this platform, not an edge
+    # case: a careful post working through a dozen passages runs past 8k
+    # easily. The ceiling exists to bound abuse, not to shorten testimony.
+    max_post_chars: int = Field(default=16_000, ge=200, le=50_000)
     max_reply_chars: int = Field(default=4_000, ge=100, le=20_000)
 
     # Open-platform protections: per-client sliding-window rate limits and the

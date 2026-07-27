@@ -70,9 +70,12 @@ def analyze_with_anthropic(
         ensure_ascii=False,
     )
     try:
-        response = client.beta.messages.create(
+        # Streamed: a long post yields many claims, each with pairing
+        # classifications, so the structured output is large. Streaming keeps
+        # the request from hitting HTTP timeouts at this max_tokens.
+        with client.beta.messages.stream(
             model=settings.anthropic_model,
-            max_tokens=8192,
+            max_tokens=32000,
             system=SYSTEM_INSTRUCTIONS,
             output_config={"format": {
                 "type": "json_schema",
@@ -83,12 +86,20 @@ def analyze_with_anthropic(
             betas=["server-side-fallback-2026-07-01"],
             fallbacks="default",
             messages=[{"role": "user", "content": payload}],
-        )
+        ) as stream:
+            response = stream.get_final_message()
     except Exception as exc:
         raise ProviderError(f"Anthropic API call failed: {exc}") from exc
 
     if response.stop_reason == "refusal":
         raise ProviderError("Anthropic model declined the request (stop_reason=refusal)")
+    if response.stop_reason == "max_tokens":
+        # Truncated structured output would fail as a confusing JSON parse
+        # error; name the real cause so the ceiling gets raised deliberately.
+        raise ProviderError(
+            "Anthropic response hit max_tokens and was truncated — the analysis was too "
+            "large for the output budget. Raise max_tokens or shorten the content."
+        )
 
     text = next((block.text for block in response.content if block.type == "text"), None)
     if text is None:

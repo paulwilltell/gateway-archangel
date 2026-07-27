@@ -174,6 +174,23 @@ def _grounding_trace(loom: Loom, claim_index: int) -> str | None:
     return None
 
 
+def _attested_references(db: Session | None, references: set[str], known: set[str]) -> set[str]:
+    """Which of these references exist in the canonical corpus.
+
+    Pairings legitimately cite passages beyond a claim's evidence_references —
+    counterpassages especially. Attestation must therefore be checked against
+    the corpus itself, not against the narrower evidence set, or real verses
+    are silently treated as forged and their support never derives.
+    """
+    unchecked = sorted(references - known)
+    if not unchecked or db is None:
+        return known & references
+    found = set(
+        db.scalars(select(BibleVerse.reference).where(BibleVerse.reference.in_(unchecked))).all()
+    )
+    return (known & references) | found
+
+
 def derive_entailment(db: Session, result: AnalysisResult, attested: set[str]) -> dict | None:
     """Stage 2: derive each claim's support level from the published rules.
 
@@ -183,6 +200,11 @@ def derive_entailment(db: Session, result: AnalysisResult, attested: set[str]) -
     governs: a support level the rules do not yield is overwritten, whatever
     the model asserted.
     """
+    pairing_refs = {c.reference for claim in result.claims for c in claim.pairings}
+    if not pairing_refs:
+        return None
+    corpus_attested = _attested_references(db, pairing_refs, attested)
+
     pairings: list[dict] = []
     for index, claim in enumerate(result.claims):
         for classification in claim.pairings:
@@ -201,7 +223,7 @@ def derive_entailment(db: Session, result: AnalysisResult, attested: set[str]) -
                 {
                     "claim_index": index,
                     "reference": classification.reference,
-                    "attested": classification.reference in attested,
+                    "attested": classification.reference in corpus_attested,
                     "rule": verdict.rule,
                     "support_level": verdict.support_level,
                     "explanation": verdict.explanation,

@@ -198,6 +198,61 @@ def test_derived_support_overrides_what_the_model_asserted():
     assert record["claims"][0]["trace"] and "derives_support" in record["claims"][0]["trace"]
 
 
+def test_counterpassage_references_are_attested_against_the_corpus():
+    """Regression: pairings may cite passages beyond a claim's own evidence
+    list (counterpassages especially). Checking attestation against that
+    narrower list treated real verses as forged and silently derived nothing,
+    marking a well-supported claim insufficient."""
+    from app.analysis.retrieval import seed_corpus
+    from app.config import Settings
+    from app.db import Database
+
+    settings = Settings(app_env="test", database_url="sqlite://", seed_demo_data=False)
+    database = Database(settings.database_url)
+    database.create_all()
+
+    result = AnalysisResult(
+        alignment="aligned",
+        support_level="strong_inference",
+        confidence=0.8,
+        claims=[
+            ClaimAssessment(
+                claim="Believers are commanded to forgive one another.",
+                alignment="aligned",
+                support_level="strong_inference",
+                rationale="r",
+                # Note: Luke 17:3 is a counterpassage, deliberately absent here.
+                evidence_references=["Colossians 3:13"],
+                pairings=[
+                    PairingClassification(
+                        reference="Colossians 3:13", speech_act="command",
+                        audience="all_believers", covenant_scope="new_covenant",
+                        claim_modality="obligation", addresses_claim_subject=True,
+                        claim_keeps_conditions=True,
+                    ),
+                    PairingClassification(
+                        reference="Luke 17:3", speech_act="command",
+                        audience="all_believers", covenant_scope="new_covenant",
+                        claim_modality="obligation", addresses_claim_subject=True,
+                        claim_keeps_conditions=True,
+                    ),
+                ],
+            )
+        ],
+        evidence=[],
+        safety={"level": "none", "category": "none", "display_message": None, "resources": []},
+        analyzer_mode="anthropic",
+    )
+
+    with database.session() as db:
+        seed_corpus(db, settings.corpus_seed_path, settings.corpus_version)
+        record = derive_entailment(db, result, attested={"Colossians 3:13"})
+
+    fired = {r["reference"]: r for r in record["claims"][0]["rules_fired"]}
+    assert fired["Luke 17:3"]["attested"] is True, "a real verse was treated as unattested"
+    assert record["claims"][0]["derived_support"] == "direct_text"
+
+
 def test_the_rules_are_published_on_the_method_page():
     """A hermeneutic applied in secret is the thing this platform exists to
     avoid. If the rules govern, they must be readable."""
