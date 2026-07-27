@@ -29,6 +29,28 @@
   </div>
 </section>
 
+<section class="method-flow" id="hermeneutic">
+  <div class="section-heading"><div><span>THE PUBLISHED HERMENEUTIC</span><h2>How a passage is judged to support a claim</h2></div></div>
+  <p>Archangel does not decide whether a passage supports a claim. It <strong>classifies</strong> each passage — what it does in its own context, whom it addresses, which covenant it belongs to, whether the claim keeps the conditions attached to it — and the rules below <strong>derive</strong> the support level from those classifications. A support level the rules do not yield is overruled, whatever the analysis asserted.</p>
+  <p>This relocates interpretation rather than removing it: classifying a passage is still a judgment, but a narrow and checkable one, and the step from classification to verdict is now deterministic and open to your inspection. These rules encode mainstream grammatical-historical reading. Sincere Christians dispute some of them, which is why disputes surface as <em>disputed interpretation</em> rather than being settled, and why the set carries a version: <code>{{ ruleset_version }}</code>.</p>
+  <div class="source-table-wrap">
+    <table class="source-table">
+      <thead><tr><th>Rule</th><th>Kind</th><th>Fires when</th><th>Yields</th></tr></thead>
+      <tbody>
+        {% for rule in hermeneutic_rules %}
+          <tr>
+            <td><code>{{ rule.rule }}</code></td>
+            <td>{{ rule.kind }}</td>
+            <td>{{ rule.when }}</td>
+            <td><code>{{ rule.yields }}</code></td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <p>Blocking rules are checked first, so a category error — reading narrative as command, or a promise to Israel as a personal guarantee — cannot be outvoted by an otherwise supportive profile.</p>
+</section>
+
 <section class="method-flow" id="canon">
   <div class="section-heading"><div><span>THE CANONICAL LAYER</span><h2>Which Bible this platform actually loads</h2></div></div>
   <p>Gateway's canonical layer is the <strong>66-book Protestant canon</strong> in the <strong>King James Version (1769)</strong> — 31,102 verses, public domain. This is a commitment, not a neutral position, and you deserve to know it before you trust an analysis.</p>

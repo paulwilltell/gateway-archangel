@@ -11,6 +11,7 @@ from sqlalchemy.orm import joinedload, selectinload
 
 from app.analysis.engine import analysis_to_dict, analyze_target
 from app.models import Analysis, AuditEvent, ContentReport, Post, Reply
+from app.hermeneutic import HERMENEUTIC_RULESET_VERSION, published_rules
 from app.ownership import new_token
 from app.policy import POLICY_CATEGORIES
 from app.routers.common import (
@@ -257,7 +258,12 @@ def method_page(request: Request):
     return templates.TemplateResponse(
         request=request,
         name="method.html",
-        context={"registry": registry, "settings": request.app.state.settings},
+        context={
+            "registry": registry,
+            "settings": request.app.state.settings,
+            "hermeneutic_rules": published_rules(),
+            "ruleset_version": HERMENEUTIC_RULESET_VERSION,
+        },
     )
 
 

@@ -44,10 +44,37 @@
             <strong>Canonical provenance verified</strong> — {{ loom.summary.grounded }}/{{ loom.summary.total_claims }}
             claim{{ '' if loom.summary.total_claims == 1 else 's' }} cite a passage attested in this corpus
             {%- if loom.summary.downgraded %}; {{ loom.summary.downgraded }} had textual support withdrawn (cited text not attested){% endif %}.
-            <em>This checks that the citations are real, not that the passage entails the claim — that judgment is the model's and is not machine-verified.</em>
+            {% if not loom.entailment %}<em>This checks that the citations are real, not that the passage entails the claim — that judgment is the model's and is not machine-verified.</em>{% endif %}
           </span>
           <span class="loom-engine">{{ loom.engine }} · deterministic</span>
         </div>
+
+        {% if loom.entailment %}
+          {% set ent = loom.entailment %}
+          <div class="loom-strip {{ 'loom-flagged' if ent.summary.overridden else 'loom-clean' }}">
+            <span class="loom-mark">⟐</span>
+            <span>
+              <strong>Support derived, not asserted</strong> — {{ ent.summary.claims_derived }}
+              claim{{ '' if ent.summary.claims_derived == 1 else 's' }} evaluated against the
+              <a href="/method#hermeneutic">published rules</a>
+              {%- if ent.summary.overridden %}; {{ ent.summary.overridden }} had the analyzer's asserted level overruled{% endif %}.
+              <em>The model classified each passage; these rules decided what it supports.</em>
+            </span>
+            <span class="loom-engine">{{ ent.ruleset_version }}</span>
+          </div>
+          {% if not compact %}
+            <div class="analysis-section">
+              <h4>Rules applied</h4>
+              <ul class="rule-list">
+                {% for record in ent.claims %}
+                  {% for fired in record.rules_fired %}
+                    <li><code>{{ fired.rule }}</code> on {{ fired.reference }} → {{ fired.yields|replace('_', ' ') }}<span>{{ fired.explanation }}</span></li>
+                  {% endfor %}
+                {% endfor %}
+              </ul>
+            </div>
+          {% endif %}
+        {% endif %}
       {% endif %}
 
       {% if analysis.claims %}

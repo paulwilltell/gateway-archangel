@@ -581,6 +581,11 @@ button:active { transform: translateY(0); filter: brightness(0.97); }
 .loom-clean { color: #a8e0bf; background: rgba(83, 160, 116, 0.08); border: 1px solid rgba(83, 160, 116, 0.2); }
 .loom-flagged { color: #f0c37c; background: rgba(219, 162, 75, 0.08); border: 1px solid rgba(219, 162, 75, 0.22); }
 
+.loom-strip a { color: inherit; border-bottom: 1px solid currentColor; text-decoration: none; }
+.rule-list { margin: 0; padding-left: 16px; }
+.rule-list li { margin-bottom: 8px; color: #c8c5bd; font-size: 11px; line-height: 1.55; }
+.rule-list li span { display: block; margin-top: 2px; color: var(--faint); font-size: 10.5px; }
+
 .analysis-section { margin-top: 17px; }
 .analysis-section h4 { margin: 0 0 9px; color: var(--gold); font-size: 9.5px; letter-spacing: 0.18em; text-transform: uppercase; font-weight: 700; }
 .claim-row { padding: 12px 14px; border-left: 2px solid var(--gold-dark); border-radius: 0 9px 9px 0; background: rgba(244, 240, 231, 0.02); }

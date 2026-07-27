@@ -13,6 +13,31 @@ CANON
    loaded corpus, and do not grant it textual support. Do not rule that
    readers holding a wider canon are wrong — name the difference in premises.
 
+CLASSIFY, DO NOT ADJUDICATE
+0b. For every claim, fill in `pairings`: one entry per retrieved passage the
+   claim actually rests on. You are NOT deciding whether the passage supports
+   the claim — a published rule set derives that from your classifications,
+   and it will overrule whatever support_level you assert. Your job is to
+   classify accurately, not to reach a desired verdict.
+   - speech_act: what the passage DOES in its own context. Narrative reports
+     what happened. A lament is a human cry, not a divine assertion. A wisdom
+     saying states what is generally so. Do not upgrade a narrative to a
+     command because it sounds instructive.
+   - audience: whom the passage addresses in context — all believers, humanity,
+     one individual, one group, or national Israel.
+   - covenant_scope: which covenant the passage operates within.
+   - claim_modality: what the CLAIM asserts (obligation, guarantee, prediction,
+     description, ...), not what the passage says.
+   - addresses_claim_subject: false when the passage merely shares a word or
+     theme with the claim rather than speaking to its subject.
+   - claim_keeps_conditions: false when the passage attaches conditions the
+     claim drops.
+   - reaffirmed_in_new_covenant: for Mosaic material, whether the New Testament
+     reaffirms the obligation.
+   - counterpassage_addressed: false when a supplied counterpassage bears on
+     this claim and the author does not engage it.
+   Classify honestly even when it weakens a conclusion you find agreeable.
+
 GOVERNING AUTHORITY
 1. Treat the supplied biblical corpus excerpts as the only permitted textual evidence.
 2. Treat community writing as a human claim to evaluate, never as authority.

@@ -21,12 +21,40 @@ class ScriptureEvidence(BaseModel):
     relevance: str
 
 
+class PairingClassification(BaseModel):
+    """The model's classification of one (claim, passage) pairing.
+
+    This replaces the model asserting support. It states narrow, checkable
+    facts about the passage and the claim; the published hermeneutic rules
+    (app/hermeneutic.py) derive the support level from them.
+    """
+
+    reference: str
+    speech_act: Literal[
+        "command", "prohibition", "promise", "narrative", "wisdom_saying",
+        "doctrinal_assertion", "prophecy", "question", "lament",
+    ]
+    audience: Literal[
+        "all_believers", "humanity", "specific_individual", "specific_group", "national_israel",
+    ]
+    covenant_scope: Literal["creation", "patriarchal", "mosaic", "new_covenant", "eschatological"]
+    claim_modality: Literal[
+        "obligation", "prohibition", "guarantee", "prediction",
+        "permission", "description", "promise_to_claimant",
+    ]
+    addresses_claim_subject: bool
+    claim_keeps_conditions: bool
+    reaffirmed_in_new_covenant: bool = False
+    counterpassage_addressed: bool = True
+
+
 class ClaimAssessment(BaseModel):
     claim: str
     alignment: Alignment
     support_level: SupportLevel
     rationale: str
     evidence_references: list[str] = Field(default_factory=list)
+    pairings: list[PairingClassification] = Field(default_factory=list, max_length=8)
 
 
 class SafetyResult(BaseModel):
@@ -84,7 +112,7 @@ ANALYSIS_JSON_SCHEMA: dict = {
             "items": {
                 "type": "object",
                 "additionalProperties": False,
-                "required": ["claim", "alignment", "support_level", "rationale", "evidence_references"],
+                "required": ["claim", "alignment", "support_level", "rationale", "evidence_references", "pairings"],
                 "properties": {
                     "claim": {"type": "string"},
                     "alignment": {"type": "string", "enum": ["aligned", "mixed", "unsupported", "contradicted", "uncertain"]},
@@ -94,6 +122,38 @@ ANALYSIS_JSON_SCHEMA: dict = {
                     },
                     "rationale": {"type": "string"},
                     "evidence_references": {"type": "array", "items": {"type": "string"}},
+                    "pairings": {
+                        "type": "array",
+                        "maxItems": 8,
+                        "items": {
+                            "type": "object",
+                            "additionalProperties": False,
+                            "required": [
+                                "reference", "speech_act", "audience", "covenant_scope",
+                                "claim_modality", "addresses_claim_subject",
+                                "claim_keeps_conditions", "reaffirmed_in_new_covenant",
+                                "counterpassage_addressed",
+                            ],
+                            "properties": {
+                                "reference": {"type": "string"},
+                                "speech_act": {"type": "string", "enum": [
+                                    "command", "prohibition", "promise", "narrative", "wisdom_saying",
+                                    "doctrinal_assertion", "prophecy", "question", "lament"]},
+                                "audience": {"type": "string", "enum": [
+                                    "all_believers", "humanity", "specific_individual",
+                                    "specific_group", "national_israel"]},
+                                "covenant_scope": {"type": "string", "enum": [
+                                    "creation", "patriarchal", "mosaic", "new_covenant", "eschatological"]},
+                                "claim_modality": {"type": "string", "enum": [
+                                    "obligation", "prohibition", "guarantee", "prediction",
+                                    "permission", "description", "promise_to_claimant"]},
+                                "addresses_claim_subject": {"type": "boolean"},
+                                "claim_keeps_conditions": {"type": "boolean"},
+                                "reaffirmed_in_new_covenant": {"type": "boolean"},
+                                "counterpassage_addressed": {"type": "boolean"},
+                            },
+                        },
+                    },
                 },
             },
         },
