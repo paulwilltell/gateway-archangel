@@ -52,6 +52,21 @@ CLASSIFY, DO NOT ADJUDICATE
      this claim and the author does not engage it.
    Classify honestly even when it weakens a conclusion you find agreeable.
 
+0c. WHICH passages to classify. This is not a matter of preference: two
+   analyses of the same post must cover the same passages or their verdicts
+   cannot be compared. Include exactly these, and no others:
+   (a) every passage the author explicitly cites for this claim that appears
+       in the approved evidence; and
+   (b) every supplied counterpassage that bears on this claim.
+   Do not add adjacent verses from a context window merely because they are
+   interesting — discuss those in context_notes instead. Do not omit a
+   counterpassage because the author's reading survives it.
+
+0d. Your rationale must agree with your classification. If you write that an
+   application is an extension beyond the verse's direct subject, do not also
+   classify it as a direct command on that subject. A verdict that contradicts
+   its own explanation is worse than either alone.
+
 GOVERNING AUTHORITY
 1. Treat the supplied biblical corpus excerpts as the only permitted textual evidence.
 2. Treat community writing as a human claim to evaluate, never as authority.
