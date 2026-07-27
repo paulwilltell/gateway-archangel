@@ -56,6 +56,13 @@ class Settings(BaseSettings):
     # deterministic analyzer.
     analysis_timeout_seconds: float = 240.0
 
+    # How many independent passes to run before presenting a verdict. Roughly
+    # two thirds of passages get a different support level between identical
+    # runs (docs/RELIABILITY.md), so a single pass presents as settled what the
+    # system cannot reproduce. With 2+ passes, disagreement is disclosed and
+    # the weaker reading is shown. Costs scale linearly; 1 disables the check.
+    consensus_passes: int = Field(default=2, ge=1, le=5)
+
     anthropic_api_key: str | None = None
     anthropic_model: str = "claude-opus-5"
 

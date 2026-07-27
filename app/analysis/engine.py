@@ -16,6 +16,7 @@ from app.analysis.providers import (
     analyze_with_openai,
 )
 from app.analysis.prompt import SYSTEM_INSTRUCTIONS
+from app.consensus import ConsensusRecord, apply_consensus
 from app.analysis.retrieval import (
     COUNTERPASSAGE_VERSION,
     THEME_INDEX_VERSION,
@@ -367,21 +368,44 @@ def analyze_target(
 
     result: AnalysisResult
     provider_error: str | None = None
+    consensus: ConsensusRecord | None = None
     if settings.archangel_analyzer == "heuristic":
         result = analyze_heuristically(target.text, evidence_rows, safety)
     else:
         try:
             lexical_payload = lexical_context(target.text, [row.text for row in evidence_rows])
             context_payload = retrieval_context(db, evidence_rows)
-            result = _provider_analysis(
-                settings,
-                target.text,
-                evidence_payload,
-                safety_payload,
-                lexical_payload,
-                context_payload,
-            )
-            result = _enforce_evidence_boundary(result, evidence_rows)
+
+            def one_pass() -> AnalysisResult:
+                passed = _provider_analysis(
+                    settings,
+                    target.text,
+                    evidence_payload,
+                    safety_payload,
+                    lexical_payload,
+                    context_payload,
+                )
+                return _enforce_evidence_boundary(passed, evidence_rows)
+
+            result = one_pass()
+            # Additional passes exist only to test whether the first pass's
+            # verdicts reproduce. A failed extra pass must never lose the
+            # analysis we already have, so it degrades to fewer passes.
+            others: list[AnalysisResult] = []
+            for _ in range(max(0, settings.consensus_passes - 1)):
+                try:
+                    others.append(one_pass())
+                except Exception as exc:
+                    db.add(
+                        AuditEvent(
+                            event_type="consensus_pass_failed",
+                            target_type=target_type,
+                            target_id=target_id,
+                            details_json=json.dumps({"error": f"{type(exc).__name__}: {str(exc)[:200]}"}),
+                        )
+                    )
+                    break
+            consensus = apply_consensus(result, others)
         except Exception as exc:  # provider failure must not block the safety boundary
             provider_error = f"{type(exc).__name__}: {str(exc)[:400]}"
             result = analyze_heuristically(target.text, evidence_rows, safety)
@@ -422,6 +446,7 @@ def analyze_target(
             {
                 **json.loads(result.model_dump_json()),
                 "loom_verification": loom_verification,
+                "consensus": consensus.to_dict() if consensus else None,
                 "provenance": build_provenance(settings, result),
             }
         ),

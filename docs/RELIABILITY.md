@@ -69,3 +69,38 @@ Structural options, none yet implemented:
 
 Option 2 is the recommended direction: it converts a defect into a disclosure,
 which is what this platform does everywhere else.
+
+## Option 2, implemented and measured
+
+Implemented in `app/consensus.py`, `consensus_passes` (default 2). Where two
+passes disagree about a passage, the **weaker** reading is presented and the
+passage is marked contested — never the stronger, because a support level the
+system cannot reproduce is not one it has earned.
+
+Contested rate over two passes:
+
+| Post | Passages settled | Contested | Claims lowered |
+|---|---|---|---|
+| `evals/consistency_probe.txt` | 5/8 | 38% | 2 of 5 |
+| A real 8,266-character testimony | 12/16 | 25% | 2 of 8 |
+
+**The feature is usable at these rates.** The earlier four-run agreement figure
+(33%) was pessimistic about the two-pass case: with two passes, three quarters
+of passages on a real post reproduce, and only a quarter of claims move. The
+page is not reduced to "everything is contested".
+
+Two further findings worth keeping:
+
+- **Most disagreements are between adjacent levels** (`direct_text` versus
+  `strong_inference`), not wild swings. The four-way split on Romans 12:18 is
+  the tail, not the average.
+- **Two different failures were being conflated.** A passage can be contested
+  because the passes *read it differently* (`levels_disagree`) or because one
+  pass *did not consider it at all* (`coverage_differs`). Reporting both as
+  "contested" produced the nonsense line "contested — one reading seen", so the
+  record and the UI now name which.
+
+Remaining cost work, in order of leverage: the Batch API (50% off, and this
+analysis is already asynchronous background work), classification on a smaller
+model, and prompt caching on the stable prefix. Together these make two passes
+cheaper than one Opus pass is today.

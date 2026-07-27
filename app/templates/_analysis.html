@@ -36,6 +36,43 @@
         <div><span>Mode</span><strong>{{ analysis.analyzer_mode|replace('_', ' ') }}</strong></div>
       </div>
 
+      {% if analysis.consensus and analysis.consensus.passes > 1 %}
+        {% set con = analysis.consensus %}
+        <div class="loom-strip {{ 'loom-flagged' if con.contested else 'loom-clean' }}">
+          <span class="loom-mark">⇄</span>
+          <span>
+            {% if con.contested %}
+              <strong>The analyzer disagreed with itself</strong> on
+              {{ con.contested|length }} of {{ con.settled|length + con.contested|length }}
+              passage{{ '' if (con.settled|length + con.contested|length) == 1 else 's' }}
+              across {{ con.passes }} independent passes. Where it disagreed, the
+              <em>weaker</em> reading is shown — a support level it cannot reproduce is not one it has earned.
+              Treat those points as contested rather than settled.
+            {% else %}
+              <strong>Reproduced across {{ con.passes }} passes</strong> — every passage received
+              the same reading each time.
+            {% endif %}
+          </span>
+          <span class="loom-engine">{{ con.passes }} passes</span>
+        </div>
+        {% if con.contested and not compact %}
+          <div class="analysis-section">
+            <h4>Contested passages</h4>
+            <ul class="rule-list">
+              {% for reference, detail in con.contested.items() %}
+                <li><code>{{ reference }}</code> — shown as “{{ detail.presented|support_label }}”<span>
+                  {%- if detail.reason == 'levels_disagree' %}
+                    Read differently across passes: {{ detail.levels_seen|map('support_label')|join('; ') }}.
+                  {%- else %}
+                    Considered in only {{ detail.seen_in_passes }} passes — the analyzer did not consistently treat this passage as bearing on the claim.
+                  {%- endif %}
+                </span></li>
+              {% endfor %}
+            </ul>
+          </div>
+        {% endif %}
+      {% endif %}
+
       {% if analysis.loom_verification %}
         {% set loom = analysis.loom_verification %}
         <div class="loom-strip {{ 'loom-clean' if loom.summary.downgraded == 0 else 'loom-flagged' }}">
