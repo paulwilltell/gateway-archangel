@@ -589,6 +589,14 @@ button:active { transform: translateY(0); filter: brightness(0.97); }
 .analysis-section { margin-top: 17px; }
 .analysis-section h4 { margin: 0 0 9px; color: var(--gold); font-size: 9.5px; letter-spacing: 0.18em; text-transform: uppercase; font-weight: 700; }
 .claim-row { padding: 12px 14px; border-left: 2px solid var(--gold-dark); border-radius: 0 9px 9px 0; background: rgba(244, 240, 231, 0.02); }
+.claim-row + .claim-row { margin-top: 8px; }
+.claim-held { border-left-color: rgba(83, 160, 116, 0.5); }
+.claim-questioned { border-left-color: rgba(219, 162, 75, 0.5); }
+.more-questions { margin-top: 10px; }
+.more-questions summary { cursor: pointer; list-style: none; color: var(--faint); font-size: 10.5px; letter-spacing: 0.06em; text-transform: uppercase; }
+.more-questions summary::-webkit-details-marker { display: none; }
+.more-questions summary:hover { color: var(--muted); }
+.more-questions .claim-row { margin-top: 8px; }
 .claim-row p { margin: 8px 0 0; color: #aaa8a3; font-size: 11.5px; line-height: 1.65; }
 .claim-row .claim-text { color: #d5d2ca; font-family: var(--serif); font-style: italic; font-size: 12.5px; font-weight: 420; }
 .claim-topline { display: flex; align-items: center; gap: 8px; color: var(--faint); font-size: 8.5px; text-transform: uppercase; letter-spacing: 0.1em; }

@@ -15,7 +15,7 @@
           <strong>Archangel analysis</strong>
           <small>Engine {{ analysis.engine_version }} · Corpus {{ analysis.corpus_version }}</small>
         </div>
-        <span class="verdict verdict-{{ analysis.alignment }}">{{ analysis.alignment|replace('_', ' ') }}</span>
+        <span class="verdict verdict-{{ analysis.alignment }}">{{ analysis.alignment|alignment_label }}</span>
       </div>
 
       {% if analysis.safety and analysis.safety.level != 'none' %}
@@ -31,7 +31,7 @@
       {% endif %}
 
       <div class="analysis-metrics">
-        <div><span>Support level</span><strong>{{ analysis.support_level|replace('_', ' ') }}</strong></div>
+        <div><span>Support level</span><strong>{{ analysis.support_level|support_label }}</strong></div>
         <div><span>Confidence</span><strong>{{ (analysis.confidence * 100)|round|int }}%</strong></div>
         <div><span>Mode</span><strong>{{ analysis.analyzer_mode|replace('_', ' ') }}</strong></div>
       </div>
@@ -78,19 +78,51 @@
       {% endif %}
 
       {% if analysis.claims %}
-        <div class="analysis-section">
-          <h4>Claim assessment</h4>
-          {% for claim in analysis.claims %}
-            <article class="claim-row">
-              <div class="claim-topline">
-                <span class="mini-verdict verdict-{{ claim.alignment }}">{{ claim.alignment }}</span>
-                <span>{{ claim.support_level|replace('_', ' ') }}</span>
-              </div>
-              {% if not compact %}<p class="claim-text">{{ claim.claim }}</p>{% endif %}
-              <p>{{ claim.rationale }}</p>
-            </article>
-          {% endfor %}
-        </div>
+        {% set grouped = analysis.claims|split_claims %}
+
+        {% if grouped.held %}
+          <div class="analysis-section">
+            <h4>What your passages carry</h4>
+            {% for claim in grouped.held %}
+              <article class="claim-row claim-held">
+                <div class="claim-topline">
+                  <span class="mini-verdict verdict-{{ claim.alignment }}">{{ claim.support_level|support_label }}</span>
+                </div>
+                {% if not compact %}<p class="claim-text">{{ claim.claim }}</p>{% endif %}
+                <p>{{ claim.rationale }}</p>
+              </article>
+            {% endfor %}
+          </div>
+        {% endif %}
+
+        {% if grouped.questioned %}
+          <div class="analysis-section">
+            <h4>Worth a second look</h4>
+            {% for claim in grouped.questioned %}
+              <article class="claim-row claim-questioned">
+                <div class="claim-topline">
+                  <span class="mini-verdict verdict-{{ claim.alignment }}">{{ claim.support_level|support_label }}</span>
+                </div>
+                {% if not compact %}<p class="claim-text">{{ claim.claim }}</p>{% endif %}
+                <p>{{ claim.rationale }}</p>
+              </article>
+            {% endfor %}
+            {% if grouped.questioned_extra %}
+              <details class="more-questions">
+                <summary>{{ grouped.questioned_extra|length }} more point{{ '' if grouped.questioned_extra|length == 1 else 's' }} to consider</summary>
+                {% for claim in grouped.questioned_extra %}
+                  <article class="claim-row claim-questioned">
+                    <div class="claim-topline">
+                      <span class="mini-verdict verdict-{{ claim.alignment }}">{{ claim.support_level|support_label }}</span>
+                    </div>
+                    {% if not compact %}<p class="claim-text">{{ claim.claim }}</p>{% endif %}
+                    <p>{{ claim.rationale }}</p>
+                  </article>
+                {% endfor %}
+              </details>
+            {% endif %}
+          </div>
+        {% endif %}
       {% endif %}
 
       {% if analysis.evidence %}

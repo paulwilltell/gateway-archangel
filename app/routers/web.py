@@ -11,6 +11,7 @@ from sqlalchemy.orm import joinedload, selectinload
 
 from app.analysis.engine import analysis_to_dict, analyze_target
 from app.models import Analysis, AuditEvent, ContentReport, Post, Reply
+from app.display import alignment_label, split_claims, support_label
 from app.hermeneutic import HERMENEUTIC_RULESET_VERSION, published_rules
 from app.ownership import new_token
 from app.policy import POLICY_CATEGORIES
@@ -24,6 +25,11 @@ from app.routers.common import (
 
 router = APIRouter()
 templates = Jinja2Templates(directory=str(Path(__file__).resolve().parent.parent / "templates"))
+# Reader-facing wording and ordering live in app/display.py, deliberately
+# separate from the engine's internal vocabulary.
+templates.env.filters["support_label"] = support_label
+templates.env.filters["alignment_label"] = alignment_label
+templates.env.filters["split_claims"] = split_claims
 
 
 def _run_analysis(request: Request, target_type: str, target_id: str) -> None:
