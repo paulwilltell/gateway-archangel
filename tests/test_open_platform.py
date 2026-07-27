@@ -129,6 +129,17 @@ def test_report_then_remove_then_restore_flow():
         assert post_id in [p["id"] for p in client.get("/api/v1/posts").json()]
 
 
+def test_method_page_discloses_canon_commitment():
+    """The canon is a position, not a neutral default — it must be stated."""
+    app = create_app(make_settings())
+    with TestClient(app) as client:
+        page = client.get("/method").text
+    assert 'id="canon"' in page
+    assert "66-book Protestant canon" in page
+    assert "analyzed as a claim" in page
+    assert "Maccabees" in page
+
+
 def test_moderation_disabled_without_configured_token():
     app = create_app(make_settings(moderation_token=None))
     with TestClient(app) as client:

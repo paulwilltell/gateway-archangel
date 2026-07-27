@@ -1,5 +1,27 @@
 # Biblical authority policy
 
+## Canon commitment (disclosed, not neutral)
+
+The canonical layer is the **66-book Protestant canon** in the **King James
+Version (1769)**, public domain, 31,102 verses, corpus version
+`kjv-1769-full-2026-07`. This is a position the platform takes, and it is
+stated publicly on the Method page (`/method#canon`) rather than left implicit.
+
+Consequences, applied consistently:
+
+- **Deuterocanonical / apocryphal citations** (Tobit, Sirach, 1–2 Maccabees,
+  2 Esdras, and the rest) are analyzed **as claims**, never attested as
+  Scripture. Archangel names them as outside the loaded corpus; Loom refuses
+  to ground textual support on them.
+- **This is a difference in premises, not a verdict on readers.** Catholic,
+  Orthodox, and Ethiopian canons differ. Where the canon itself is the
+  question, Archangel names the dispute rather than settling it.
+- **Translation is disclosed too.** The KJV is one rendering of one manuscript
+  tradition in four-century-old English; the research layer supplies both the
+  1611 English sense and the original-language sense (see `app/lexicon.py`).
+- Every analysis record carries its `corpus_version`, so a conclusion can
+  always be traced to the exact text base that produced it.
+
 ## Governing order
 
 1. Approved canonical biblical text.
