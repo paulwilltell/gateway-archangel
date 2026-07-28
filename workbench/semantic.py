@@ -25,14 +25,15 @@ from functools import lru_cache
 import numpy as np
 
 from workbench.corpus import load_verses, resolve, tokens
-from workbench.embed import embeddings
+from workbench.embed import DEFAULT_VARIANT, embeddings
 
 
-@lru_cache(maxsize=1)
-def _null_stats(samples: int = 20000, seed: int = 0) -> tuple[float, float]:
+@lru_cache(maxsize=8)
+def _null_stats(variant: str, samples: int = 20000, seed: int = 0) -> tuple[float, float]:
     """Similarity of random verse pairs — the baseline every score is read
-    against. Two verses picked at random are the definition of 'no signal'."""
-    emb = embeddings()
+    against. Two verses picked at random are the definition of 'no signal'.
+    Computed per variant, since each geometry has its own scale."""
+    emb = embeddings(variant)
     rng = random.Random(seed)
     n = emb.shape[0]
     sims = []
@@ -44,8 +45,8 @@ def _null_stats(samples: int = 20000, seed: int = 0) -> tuple[float, float]:
     return float(arr.mean()), float(arr.std() or 1e-9)
 
 
-def _z(sim: float) -> float:
-    mean, sd = _null_stats()
+def _z(sim: float, variant: str) -> float:
+    mean, sd = _null_stats(variant)
     return round((sim - mean) / sd, 1)
 
 
@@ -67,9 +68,9 @@ class Match:
     shared_words: list[str]
 
 
-def neighbors(reference: str, top: int = 12) -> dict:
+def neighbors(reference: str, top: int = 12, variant: str = DEFAULT_VARIANT) -> dict:
     verse = resolve(reference)
-    emb = embeddings()
+    emb = embeddings(variant)
     query = emb[verse["_index"]]
     sims = emb @ query
     order = np.argsort(-sims)
@@ -85,7 +86,7 @@ def neighbors(reference: str, top: int = 12) -> dict:
                 reference=other["reference"],
                 text=other["text"],
                 similarity=round(float(sims[idx]), 3),
-                z_score=_z(float(sims[idx])),
+                z_score=_z(float(sims[idx]), variant),
                 shared_words=_lexical_overlap(verse["text"], other["text"]),
             )
         )
@@ -94,10 +95,11 @@ def neighbors(reference: str, top: int = 12) -> dict:
     return {"query": verse["reference"], "text": verse["text"], "matches": matches}
 
 
-def bridges(reference: str, top: int = 12, min_similarity: float = 0.4, scan: int = 200) -> dict:
+def bridges(reference: str, top: int = 12, min_similarity: float = 0.4,
+            scan: int = 400, variant: str = DEFAULT_VARIANT) -> dict:
     """Semantically close, lexically disjoint — the surprising connections."""
     verse = resolve(reference)
-    emb = embeddings()
+    emb = embeddings(variant)
     query = emb[verse["_index"]]
     query_stems = _content_stems(verse["text"])
     sims = emb @ query
@@ -120,7 +122,7 @@ def bridges(reference: str, top: int = 12, min_similarity: float = 0.4, scan: in
                 reference=other["reference"],
                 text=other["text"],
                 similarity=round(sim, 3),
-                z_score=_z(sim),
+                z_score=_z(sim, variant),
                 shared_words=[],
             )
         )
@@ -130,11 +132,11 @@ def bridges(reference: str, top: int = 12, min_similarity: float = 0.4, scan: in
             "note": "close in meaning, sharing no significant words"}
 
 
-@lru_cache(maxsize=1)
-def _mean_neighbor_similarity(k: int = 10) -> np.ndarray:
+@lru_cache(maxsize=4)
+def _mean_neighbor_similarity(variant: str, k: int = 10) -> np.ndarray:
     """For each verse, its average similarity to its k nearest neighbours.
     Low = the verse sits alone in the geometry."""
-    emb = embeddings()
+    emb = embeddings(variant)
     # Chunked to keep the 31k x 31k similarity matrix off the heap.
     n = emb.shape[0]
     scores = np.empty(n, dtype=np.float32)
@@ -147,11 +149,11 @@ def _mean_neighbor_similarity(k: int = 10) -> np.ndarray:
     return scores
 
 
-def outliers(top: int = 20, min_words: int = 4) -> list[dict]:
+def outliers(top: int = 20, min_words: int = 4, variant: str = DEFAULT_VARIANT) -> list[dict]:
     """Verses least like the rest of Scripture. Filtered to verses with real
     content so the list is not dominated by three-word fragments."""
     verses = load_verses()
-    scores = _mean_neighbor_similarity()
+    scores = _mean_neighbor_similarity(variant)
     ranked = sorted(
         (
             (float(scores[v["_index"]]), v)

@@ -17,6 +17,7 @@ backups/
 app/data/strongs_*_raw.js
 app/data/kjv_full_raw.json
 workbench/.cache/
+workbench/openai_key.txt
 .DS_Store
 .idea/
 .vscode/

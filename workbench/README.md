@@ -52,6 +52,52 @@ score is IDF-weighted so a cluster of proper names does not automatically win.
 `--null` shuffles verse order and re-ranks: if the top looks the same, the
 score is tracking form, not meaning.
 
+## Semantic layer (embeddings)
+
+`semantic.py` finds where *meaning* recurs, not just words:
+
+```bash
+python -m workbench.study semantic "Micah 6:8"            # closest in meaning
+python -m workbench.study semantic "Psalms 23:1" --bridges  # close meaning, NO shared words
+python -m workbench.study outliers                        # least like the rest of Scripture
+```
+
+Verse embeddings come in tunable **variants** (`workbench/embed.py`), so
+quality is *measured*, not guessed:
+
+- `mini` — local all-MiniLM-L6-v2 (384-dim). Free, offline, no key. Fallback.
+- `openai` — text-embedding-3-large (3072-dim) via API. **The default.**
+- `openai-ctx` — same, but embedding each verse with its neighbours. Rejected.
+
+### The bridge-tuning experiment
+
+Bridges (close meaning, zero shared words) were weak with the small local
+model — Psalm 23:1's top bridges sat at z≈2.7, barely above noise, and were
+generic devotional filler. `workbench/compare_variants.py` ran a measured A/B/C:
+
+| query | mini top-z | openai top-z | openai-ctx top-z |
+|---|---|---|---|
+| Psalms 23:1 | 2.7 | **5.9** | 7.4 |
+| Ecclesiastes 1:9 | 3.8 | **7.1** | 7.4 |
+| Matthew 7:12 | 2.9 | **4.9** | 7.1 |
+| Proverbs 16:18 | 2.6 | **5.2** | 6.6 |
+| John 1:1 | 2.5 | **4.8** | 6.4 |
+
+`openai` roughly **doubled** the signal and, crucially, its bridges became
+genuinely thematic — Psalm 23:1 now surfaces **Psalm 119:176** ("I have gone
+astray like a lost sheep; seek thy servant"), a real shepherd-kinship bridge
+across entirely different vocabulary that the small model missed completely;
+Ecclesiastes 1:9 → 3:15 (cyclical time) climbed from z=3.8 to 7.1; Matthew 7:12
+found the Luke 6 Sermon-on-the-Plain golden-rule parallel.
+
+`openai-ctx` scored *higher still* — and was **rejected anyway**. Reading its
+actual bridges showed they had degraded into *adjacent verses* (Psalm 23:1 →
+23:2, 23:3): embedding a verse with its neighbours leaks context, so
+neighbouring verses embed alike and pass the no-shared-words filter while being
+trivially "connected." Higher numbers, worse tool. The z-score alone would have
+picked the wrong variant; reading the verses caught the trap. That is the whole
+discipline in one decision.
+
 ## What it is not
 
 It is lexical, not semantic — it finds where *language* recurs, not where
