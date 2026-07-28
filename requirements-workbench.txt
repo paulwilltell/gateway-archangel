@@ -1,0 +1,7 @@
+# The Workbench's semantic layer needs a local embedding model. Kept OUT of the
+# main requirements.txt on purpose: Gateway (the web app) must stay lean and
+# must not pull PyTorch into a deploy. Install this only for personal study:
+#
+#     .venv\Scripts\pip install -r requirements-workbench.txt
+#
+sentence-transformers>=3,<6

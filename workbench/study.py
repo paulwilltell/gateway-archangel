@@ -20,6 +20,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from workbench.echo import find_echoes  # noqa: E402
 from workbench.novelty import most_novel, null_comparison  # noqa: E402
+from workbench.semantic import bridges, neighbors, outliers  # noqa: E402
 
 
 def cmd_echo(args) -> int:
@@ -64,6 +65,44 @@ def cmd_novel(args) -> int:
     return 0
 
 
+def _print_matches(matches, show_shared: bool) -> None:
+    for m in matches:
+        flag = "  ***" if m.z_score >= 12 else ("   **" if m.z_score >= 8 else "     ")
+        print(f"{flag} z={m.z_score:>5}  sim={m.similarity:<5}  {m.reference}")
+        print(f"        {m.text[:90]}")
+        if show_shared:
+            print(f"        shared words: {', '.join(m.shared_words) if m.shared_words else '(none)'}")
+        print()
+
+
+def cmd_semantic(args) -> int:
+    try:
+        if args.bridges:
+            result = bridges(args.reference, top=args.top)
+            key, label = "bridges", "SEMANTIC BRIDGES (close in meaning, sharing no words)"
+        else:
+            result = neighbors(args.reference, top=args.top)
+            key, label = "matches", "SEMANTIC NEIGHBORS (closest in meaning)"
+    except KeyError as exc:
+        print(exc)
+        return 1
+    print(f"\n{result['query']} — {result['text']}\n")
+    print(f"=== {label} ===\n")
+    if not result[key]:
+        print("(none found above the threshold)")
+        return 0
+    _print_matches(result[key], show_shared=not args.bridges)
+    return 0
+
+
+def cmd_outliers(args) -> int:
+    print("\n=== MOST ISOLATED VERSES (least like the rest of Scripture) ===\n")
+    for row in outliers(top=args.top):
+        print(f"  isolation={row['isolation']:<5}  {row['reference']}")
+        print(f"        {row['text'][:90]}\n")
+    return 0
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="Personal KJV study workbench")
     sub = parser.add_subparsers(dest="command", required=True)
@@ -76,9 +115,22 @@ def main() -> int:
     p_novel.add_argument("--top", type=int, default=20)
     p_novel.add_argument("--null", action="store_true", help="run the shuffle baseline")
 
+    p_sem = sub.add_parser("semantic", help="verses close in meaning (not just words)")
+    p_sem.add_argument("reference")
+    p_sem.add_argument("--top", type=int, default=12)
+    p_sem.add_argument("--bridges", action="store_true",
+                       help="only cross-vocabulary connections (semantically close, no shared words)")
+
+    p_out = sub.add_parser("outliers", help="verses least like the rest of Scripture")
+    p_out.add_argument("--top", type=int, default=20)
+
     args = parser.parse_args()
     if args.command == "echo":
         return cmd_echo(args)
+    if args.command == "semantic":
+        return cmd_semantic(args)
+    if args.command == "outliers":
+        return cmd_outliers(args)
     return cmd_novel(args)
 
 

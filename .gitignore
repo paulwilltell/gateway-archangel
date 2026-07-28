@@ -16,6 +16,7 @@ training_exports/
 backups/
 app/data/strongs_*_raw.js
 app/data/kjv_full_raw.json
+workbench/.cache/
 .DS_Store
 .idea/
 .vscode/
