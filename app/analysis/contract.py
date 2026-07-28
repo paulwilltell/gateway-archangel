@@ -33,6 +33,7 @@ class PairingClassification(BaseModel):
     speech_act: Literal[
         "command", "prohibition", "promise", "narrative", "wisdom_saying",
         "doctrinal_assertion", "prophecy", "question", "lament",
+        "quoted_unendorsed", "hyperbole", "poetic_figure",
     ]
     audience: Literal[
         "all_believers", "humanity", "specific_individual", "specific_group", "national_israel",
@@ -138,7 +139,8 @@ ANALYSIS_JSON_SCHEMA: dict = {
                                 "reference": {"type": "string"},
                                 "speech_act": {"type": "string", "enum": [
                                     "command", "prohibition", "promise", "narrative", "wisdom_saying",
-                                    "doctrinal_assertion", "prophecy", "question", "lament"]},
+                                    "doctrinal_assertion", "prophecy", "question", "lament",
+                                    "quoted_unendorsed", "hyperbole", "poetic_figure"]},
                                 "audience": {"type": "string", "enum": [
                                     "all_believers", "humanity", "specific_individual",
                                     "specific_group", "national_israel"]},

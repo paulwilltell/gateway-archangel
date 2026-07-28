@@ -45,7 +45,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Literal
 
-HERMENEUTIC_RULESET_VERSION = "hermeneutic-rules-v1-2026-07"
+HERMENEUTIC_RULESET_VERSION = "hermeneutic-rules-v2-2026-07"
 
 # --- the classification axes the model must fill in --------------------------
 
@@ -59,6 +59,12 @@ SpeechAct = Literal[
     "prophecy",
     "question",
     "lament",               # a human cry, not divine assertion
+    # Speech Scripture RECORDS without endorsing: Satan in the wilderness,
+    # Job's friends (whom God rebukes), the fool saying there is no God,
+    # false prophets. Being in the Bible is not being taught by it.
+    "quoted_unendorsed",
+    "hyperbole",            # deliberate overstatement for effect
+    "poetic_figure",        # metaphor and imagery, not technical description
 ]
 
 Audience = Literal[
@@ -116,6 +122,32 @@ def _blocking_rules(p: PairingProfile) -> Verdict | None:
             "insufficient",
             "The passage does not address the subject of the claim. A verse that mentions a "
             "related word is not thereby about the claim.",
+        )
+
+    if p.speech_act == "quoted_unendorsed":
+        return Verdict(
+            "speaker_not_endorsed",
+            "insufficient",
+            "Scripture records these words without affirming them — they belong to a speaker "
+            "the text does not endorse. A statement being in the Bible is not the Bible "
+            "teaching it.",
+        )
+
+    if p.speech_act == "hyperbole" and p.claim_modality in {"obligation", "prohibition", "guarantee"}:
+        return Verdict(
+            "hyperbole_read_literally",
+            "wisdom_application",
+            "The passage uses deliberate overstatement for effect. Its force is real and the "
+            "seriousness it presses is genuine, but the literal action is not the thing "
+            "commanded.",
+        )
+
+    if p.speech_act == "poetic_figure" and p.claim_modality in {"guarantee", "prediction"}:
+        return Verdict(
+            "poetic_figure_pressed_literally",
+            "insufficient",
+            "The passage speaks in metaphor and imagery. Pressing a figure into a guarantee or "
+            "a prediction of mechanism asks of poetry what it does not offer.",
         )
 
     if p.speech_act in {"narrative", "lament"} and p.claim_modality in {"obligation", "prohibition", "guarantee"}:
@@ -181,6 +213,14 @@ def _supporting_rules(p: PairingProfile) -> Verdict:
     # Narrative cannot command (blocked above), but it fully supports a claim
     # about what the passage records. "Gideon laid out a fleece" is directly
     # attested by the account; only "therefore you should" is not.
+    if p.speech_act == "poetic_figure" and p.claim_modality == "description":
+        return Verdict(
+            "poetic_figure_teaches",
+            "strong_inference",
+            "Poetry teaches truly, in its own register. The claim describes what the imagery "
+            "conveys rather than pressing it for technical detail.",
+        )
+
     if p.speech_act in {"narrative", "lament", "prophecy", "question"} and p.claim_modality == "description":
         return Verdict(
             "narrative_reports_event",
@@ -235,9 +275,14 @@ def evaluate_pairing(profile: PairingProfile) -> Verdict:
     return verdict
 
 
-def weakest(levels: list[str]) -> str:
-    """The support level of a set of pairings is its strongest member — a claim
-    needs only one passage that genuinely supports it."""
+def strongest_support(levels: list[str]) -> str:
+    """A claim's support level is its strongest passage — one passage that
+    genuinely supports it is enough, and a counterpassage yielding nothing
+    does not subtract from a passage that yields something.
+
+    (Named `weakest` until v2, which returned the strongest and caused exactly
+    the confusion the name invites.)
+    """
     ranked = [level for level in SUPPORT_ORDER if level in set(levels)]
     return ranked[-1] if ranked else "insufficient"
 
@@ -247,6 +292,14 @@ def published_rules() -> list[dict]:
     return [
         {"rule": "topic_mismatch", "kind": "blocking", "yields": "insufficient",
          "when": "The passage does not address the claim's subject."},
+        {"rule": "speaker_not_endorsed", "kind": "blocking", "yields": "insufficient",
+         "when": "Scripture records the words without affirming them — Job's friends, the fool, "
+                 "Satan, a false prophet. Being in the Bible is not being taught by it."},
+        {"rule": "hyperbole_read_literally", "kind": "blocking", "yields": "wisdom_application",
+         "when": "Deliberate overstatement is read as a literal requirement. The force is real; "
+                 "the literal action is not the command."},
+        {"rule": "poetic_figure_pressed_literally", "kind": "blocking", "yields": "insufficient",
+         "when": "A metaphor is pressed into a guarantee or a prediction of mechanism."},
         {"rule": "descriptive_not_prescriptive", "kind": "blocking", "yields": "insufficient",
          "when": "Narrative or lament is read as command or guarantee."},
         {"rule": "proverb_read_as_guarantee", "kind": "blocking", "yields": "insufficient",
@@ -263,6 +316,8 @@ def published_rules() -> list[dict]:
          "when": "The passage asserts what the claim describes."},
         {"rule": "narrative_reports_event", "kind": "supporting", "yields": "direct_text",
          "when": "A claim simply describes what a narrative records (not that it is normative)."},
+        {"rule": "poetic_figure_teaches", "kind": "supporting", "yields": "strong_inference",
+         "when": "A claim describes what poetic imagery conveys, without pressing it for detail."},
         {"rule": "promise_rightly_claimed", "kind": "supporting", "yields": "strong_inference",
          "when": "A promise to all believers is claimed with its conditions intact."},
         {"rule": "wisdom_applied", "kind": "supporting", "yields": "wisdom_application",

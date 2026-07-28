@@ -37,7 +37,7 @@ from app.hermeneutic import (
     HERMENEUTIC_RULESET_VERSION,
     PairingProfile,
     evaluate_pairing,
-    weakest,
+    strongest_support,
 )
 from app.models import BibleVerse
 from app.vendor.loom_engine import Loom
@@ -243,7 +243,7 @@ def derive_entailment(db: Session, result: AnalysisResult, attested: set[str]) -
         if not claim_pairings:
             continue
         derived = derived_support_levels(loom, index)
-        level = weakest(derived) if derived else "insufficient"
+        level = strongest_support(derived) if derived else "insufficient"
         asserted = claim.support_level
         if asserted != level:
             claim.support_level = level

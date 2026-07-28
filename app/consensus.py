@@ -32,7 +32,12 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 from app.analysis.contract import AnalysisResult
-from app.hermeneutic import PairingProfile, SUPPORT_ORDER, evaluate_pairing
+from app.hermeneutic import (
+    SUPPORT_ORDER,
+    PairingProfile,
+    evaluate_pairing,
+    strongest_support,
+)
 
 
 def verse_verdicts(result: AnalysisResult) -> dict[str, str]:
@@ -132,15 +137,28 @@ def apply_consensus(primary: AnalysisResult, others: list[AnalysisResult]) -> Co
             "seen_in_passes": f"{len(present)}/{len(per_pass)}",
         }
 
+    # Each passage's agreed reading: the weaker one where passes diverged.
+    agreed: dict[str, str] = {}
+    for reference in all_references:
+        if reference in contested:
+            agreed[reference] = contested[reference]["presented"]
+        else:
+            agreed[reference] = per_pass[0][reference]
+
     downgraded = 0
     for claim in primary.claims:
         references = [c.reference for c in claim.pairings]
         touched = [r for r in references if r in contested]
         if not touched:
             continue
-        target = claim.support_level
-        for reference in touched:
-            target = _weaker(target, contested[reference]["presented"])
+        # A claim's level is its STRONGEST passage, recomputed from the agreed
+        # readings. Taking the weakest touched passage instead would let a
+        # counterpassage — which is not the claim's support at all — drag down
+        # a claim that some other passage genuinely carries.
+        target = strongest_support([agreed[r] for r in references if r in agreed])
+        # Consensus may only lower a verdict, never raise one: a second pass
+        # is a check on the first, not a vote to strengthen it.
+        target = _weaker(target, claim.support_level)
         if target != claim.support_level:
             claim.support_level = target
             if target == "insufficient":

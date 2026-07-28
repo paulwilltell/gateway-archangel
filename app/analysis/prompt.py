@@ -62,7 +62,15 @@ CLASSIFY, DO NOT ADJUDICATE
    interesting — discuss those in context_notes instead. Do not omit a
    counterpassage because the author's reading survives it.
 
-0d. Your rationale must agree with your classification. If you write that an
+0d. Three speech_act values are easy to miss and matter greatly:
+   - `quoted_unendorsed` — Scripture records the words without affirming them:
+     Job's friends (whom God rebukes), the fool of Psalm 14, Satan quoting
+     Scripture, a false prophet. Being in the Bible is not being taught by it.
+   - `hyperbole` — deliberate overstatement ("pluck out thine eye", "hate his
+     own father"). The force is real; the literal act is not the command.
+   - `poetic_figure` — metaphor and imagery, not technical description.
+
+0e. Your rationale must agree with your classification. If you write that an
    application is an extension beyond the verse's direct subject, do not also
    classify it as a direct command on that subject. A verdict that contradicts
    its own explanation is worse than either alone.

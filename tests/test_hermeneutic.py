@@ -8,7 +8,12 @@ deliberately and version — not a test to quietly adjust.
 from __future__ import annotations
 
 from app.analysis.contract import AnalysisResult, ClaimAssessment, PairingClassification
-from app.hermeneutic import PairingProfile, evaluate_pairing, published_rules, weakest
+from app.hermeneutic import (
+    PairingProfile,
+    evaluate_pairing,
+    published_rules,
+    strongest_support,
+)
 from app.loom_bridge import (
     build_entailment_graph,
     derive_entailment,
@@ -56,6 +61,32 @@ def test_narrative_does_support_a_claim_about_what_it_records():
 
     prescribing = evaluate_pairing(_profile(speech_act="narrative", claim_modality="obligation"))
     assert prescribing.support_level == "insufficient"
+
+
+def test_scripture_recording_speech_is_not_scripture_endorsing_it():
+    """Job's friends, the fool of Psalm 14, Satan quoting Scripture: all are in
+    the Bible; none are taught by it. This blocks regardless of how supportive
+    every other axis looks."""
+    for modality in ("obligation", "description", "guarantee", "promise_to_claimant"):
+        verdict = evaluate_pairing(_profile(speech_act="quoted_unendorsed", claim_modality=modality))
+        assert verdict.rule == "speaker_not_endorsed"
+        assert verdict.support_level == "insufficient"
+
+
+def test_hyperbole_keeps_its_force_without_becoming_a_literal_command():
+    literal = evaluate_pairing(_profile(speech_act="hyperbole", claim_modality="obligation"))
+    assert literal.rule == "hyperbole_read_literally"
+    assert literal.support_level == "wisdom_application"
+
+
+def test_poetry_teaches_but_does_not_guarantee_mechanism():
+    as_guarantee = evaluate_pairing(_profile(speech_act="poetic_figure", claim_modality="guarantee"))
+    assert as_guarantee.rule == "poetic_figure_pressed_literally"
+    assert as_guarantee.support_level == "insufficient"
+
+    as_teaching = evaluate_pairing(_profile(speech_act="poetic_figure", claim_modality="description"))
+    assert as_teaching.rule == "poetic_figure_teaches"
+    assert as_teaching.support_level == "strong_inference"
 
 
 def test_a_lament_is_not_a_divine_guarantee():
@@ -121,14 +152,14 @@ def test_blocking_rules_cannot_be_outvoted_by_supporting_ones():
 
 
 def test_strongest_supporting_passage_governs_a_claim():
-    assert weakest(["insufficient", "direct_text"]) == "direct_text"
-    assert weakest(["insufficient", "wisdom_application"]) == "wisdom_application"
-    assert weakest([]) == "insufficient"
+    assert strongest_support(["insufficient", "direct_text"]) == "direct_text"
+    assert strongest_support(["insufficient", "wisdom_application"]) == "wisdom_application"
+    assert strongest_support([]) == "insufficient"
 
 
 def test_the_ruleset_is_published_for_inspection():
     rules = published_rules()
-    assert len(rules) >= 10
+    assert len(rules) >= 16
     assert {r["kind"] for r in rules} == {"blocking", "supporting", "capping"}
     for rule in rules:
         assert rule["when"] and rule["yields"]
@@ -266,10 +297,15 @@ def test_the_rules_are_published_on_the_method_page():
     )
     with TestClient(app) as client:
         page = client.get("/method").text
+    from app.hermeneutic import HERMENEUTIC_RULESET_VERSION
+
     assert 'id="hermeneutic"' in page
     assert "descriptive_not_prescriptive" in page
     assert "addressee_generalized" in page
-    assert "hermeneutic-rules-v1" in page
+    assert "speaker_not_endorsed" in page
+    # Version-agnostic: the current version must be shown, whatever it is, so
+    # revising the rules does not require editing this test.
+    assert HERMENEUTIC_RULESET_VERSION in page
 
 
 def test_no_classifications_means_no_stage_two_claims():

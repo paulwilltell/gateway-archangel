@@ -100,6 +100,21 @@ Two further findings worth keeping:
   "contested" produced the nonsense line "contested — one reading seen", so the
   record and the UI now name which.
 
+### After expanding the hermeneutic (counterpassage index v2, rules v2)
+
+| Post | Passages settled | Contested | Claims lowered |
+|---|---|---|---|
+| `evals/consistency_probe.txt` | 7/10 | 30% | 0 of 5 |
+| The 8,266-character testimony | 11/14 | 21% | 1 of 8 |
+
+Expanding from 10 tensions to 35, and adding three genre-aware speech acts,
+**did not cost reliability** — contested rates held or improved. Re-measuring
+also surfaced a bug the test suite had not: `apply_consensus` lowered each
+claim to its *weakest* contested passage, so a counterpassage could sink a
+claim that a different passage genuinely carried. A claim's level is its
+strongest passage; consensus may only lower a verdict, never raise one. Claims
+lowered on the real testimony fell from 4 to 1 once fixed.
+
 Remaining cost work, in order of leverage: the Batch API (50% off, and this
 analysis is already asynchronous background work), classification on a smaller
 model, and prompt caching on the stable prefix. Together these make two passes

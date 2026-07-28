@@ -118,6 +118,34 @@ def test_a_single_pass_makes_no_consensus_claim():
     assert primary.claims[0].support_level == "direct_text"
 
 
+def test_a_contested_counterpassage_does_not_sink_a_supported_claim():
+    """Regression: a claim's level is its strongest passage. A counterpassage
+    yielding nothing is not the claim's support and must not subtract from a
+    passage that genuinely carries it."""
+    supporting = _pairing("Colossians 3:13")
+    counter = _pairing("Judges 6:37", speech_act="narrative")  # yields insufficient
+    primary = _result([supporting, counter])
+    # Second pass agrees on the support, but omits the counterpassage.
+    second = _result([_pairing("Colossians 3:13")])
+
+    record = apply_consensus(primary, [second])
+
+    assert "Judges 6:37" in record.contested
+    assert primary.claims[0].support_level == "direct_text", (
+        "the supporting passage still carries the claim"
+    )
+    assert record.claims_downgraded == 0
+
+
+def test_consensus_can_only_lower_a_verdict_never_raise_one():
+    primary = _result([_pairing("Judges 6:37", speech_act="narrative")], support="insufficient")
+    second = _result([_pairing("Judges 6:37"), _pairing("Colossians 3:13")])
+
+    apply_consensus(primary, [second])
+
+    assert primary.claims[0].support_level == "insufficient"
+
+
 def test_contested_rate_is_reported_for_measurement():
     primary = _result([_pairing("Romans 12:18"), _pairing("Luke 17:3")])
     second = _result([

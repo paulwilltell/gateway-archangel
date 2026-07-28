@@ -56,7 +56,7 @@ THEME_REFERENCES: tuple[tuple[tuple[str, ...], tuple[str, ...]], ...] = (
 # platform (versioned below, shown on the Method page), not a discovery in the
 # text, and listing two passages together asserts tension, never that one
 # defeats the other.
-COUNTERPASSAGE_VERSION = "counterpassage-index-v1-2026-07"
+COUNTERPASSAGE_VERSION = "counterpassage-index-v2-2026-07"
 COUNTERPASSAGES: tuple[tuple[tuple[str, ...], tuple[str, ...], str], ...] = (
     (
         ("Ephesians 2:8", "Ephesians 2:9", "Romans 3:28", "Galatians 2:16"),
@@ -107,6 +107,131 @@ COUNTERPASSAGES: tuple[tuple[tuple[str, ...], tuple[str, ...], str], ...] = (
         ("John 14:14", "Matthew 21:22", "Mark 11:24"),
         ("1 John 5:14", "James 4:3", "2 Corinthians 12:8", "2 Corinthians 12:9"),
         "Promises about prayer, held against the will-of-God condition and unanswered petition.",
+    ),
+    (
+        ("Romans 9:16", "Romans 9:18", "Ephesians 1:4", "Ephesians 1:5"),
+        ("1 Timothy 2:4", "2 Peter 3:9", "Revelation 22:17", "Joshua 24:15"),
+        "Election and God's choosing, held against passages on God's desire that all be saved. Historically disputed.",
+    ),
+    (
+        ("John 10:28", "John 10:29", "Romans 8:38", "Romans 8:39"),
+        ("Hebrews 6:4", "Hebrews 6:6", "Hebrews 10:26", "2 Peter 2:20"),
+        "Passages read as the security of the believer, held against warnings about falling away. Historically disputed.",
+    ),
+    (
+        ("Ephesians 2:8", "Ephesians 2:9", "Titus 3:5"),
+        ("Philippians 2:12", "2 Corinthians 13:5", "1 Corinthians 9:27"),
+        "Salvation not of works, held against working out salvation and examining oneself.",
+    ),
+    (
+        ("Colossians 2:16", "Romans 14:5", "Galatians 4:10"),
+        ("Exodus 20:8", "Exodus 20:9", "Exodus 20:10", "Isaiah 58:13"),
+        "Passages read as freedom regarding days, held against the Sabbath command. Historically disputed.",
+    ),
+    (
+        ("Mark 7:19", "Acts 10:15", "1 Timothy 4:4"),
+        ("Leviticus 11:7", "Leviticus 11:8", "Acts 15:29"),
+        "Passages read as declaring foods clean, held against dietary law and the Jerusalem decree.",
+    ),
+    (
+        ("Matthew 19:9", "Matthew 5:32"),
+        ("Mark 10:11", "Mark 10:12", "Luke 16:18", "Malachi 2:16", "1 Corinthians 7:15"),
+        "The exception clause on divorce, held against the absolute form and the desertion case. Historically disputed.",
+    ),
+    (
+        ("Isaiah 53:5", "James 5:15", "Matthew 8:17"),
+        ("2 Corinthians 12:8", "2 Corinthians 12:9", "2 Timothy 4:20", "Philippians 2:27", "1 Timothy 5:23"),
+        "Passages read as promising healing, held against faithful people left unhealed.",
+    ),
+    (
+        ("Matthew 5:34", "James 5:12"),
+        ("Numbers 30:2", "Hebrews 6:16", "Deuteronomy 6:13"),
+        "The command not to swear, held against oaths taken and even required elsewhere.",
+    ),
+    (
+        ("Proverbs 20:1", "Proverbs 23:31", "Ephesians 5:18"),
+        ("1 Timothy 5:23", "Psalms 104:15", "John 2:10"),
+        "Warnings about wine, held against its ordinary and even commended use.",
+    ),
+    (
+        ("Ephesians 6:5", "Colossians 3:22", "1 Peter 2:18"),
+        ("Galatians 3:28", "Philemon 1:16", "Exodus 21:16", "1 Timothy 1:10"),
+        "Household codes addressed to servants, held against passages undercutting the institution.",
+    ),
+    (
+        ("Psalms 137:9", "Psalms 69:24", "Psalms 109:9"),
+        ("Matthew 5:44", "Romans 12:14", "Luke 23:34"),
+        "Imprecatory psalms, held against the command to bless and not curse.",
+    ),
+    (
+        ("1 Corinthians 11:5", "1 Corinthians 11:6"),
+        ("Galatians 3:28", "1 Corinthians 11:16"),
+        "Head-covering instruction, held against there being no such custom in the churches. Historically disputed.",
+    ),
+    (
+        ("Ephesians 5:22", "Colossians 3:18", "1 Peter 3:1"),
+        ("Ephesians 5:21", "Ephesians 5:25", "1 Corinthians 7:4"),
+        "Instruction to wives, held against mutual submission and the charge to husbands.",
+    ),
+    (
+        ("Matthew 7:1", "Romans 14:4", "James 4:12"),
+        ("1 Corinthians 5:12", "John 7:24", "1 Corinthians 6:2", "Galatians 6:1"),
+        "Judge not, held against commanded discernment and judgment within the church.",
+    ),
+    (
+        ("Matthew 19:21", "Luke 14:33", "Acts 2:45"),
+        ("1 Timothy 5:8", "2 Thessalonians 3:10", "Proverbs 13:22", "Job 42:12"),
+        "Calls to give everything away, held against providing for one's household and lawful provision.",
+    ),
+    (
+        ("Matthew 5:39", "Matthew 26:52"),
+        ("Luke 22:36", "Romans 13:4", "Nehemiah 4:14"),
+        "Non-resistance, held against defence and the magistrate's sword. Historically disputed.",
+    ),
+    (
+        ("Matthew 6:25", "Matthew 6:34", "Philippians 4:6"),
+        ("Proverbs 6:6", "Proverbs 6:8", "Luke 14:28", "1 Timothy 5:8"),
+        "Take no thought for tomorrow, held against commended foresight and planning.",
+    ),
+    (
+        ("1 Corinthians 14:39", "1 Corinthians 14:5"),
+        ("1 Corinthians 14:28", "1 Corinthians 14:40", "1 Corinthians 13:8"),
+        "Forbid not to speak with tongues, held against the ordering restrictions. Historically disputed.",
+    ),
+    (
+        ("1 John 5:13", "Romans 8:16"),
+        ("2 Corinthians 13:5", "Matthew 7:22", "Matthew 7:23", "2 Peter 1:10"),
+        "Assurance of salvation, held against the command to examine oneself.",
+    ),
+    (
+        ("Exodus 20:16", "Proverbs 12:22", "Colossians 3:9"),
+        ("Exodus 1:19", "Exodus 1:20", "Joshua 2:4", "Hebrews 11:31"),
+        "The prohibition of lying, held against deception commended in Scripture's own narratives.",
+    ),
+    (
+        ("Matthew 24:36", "1 Thessalonians 5:2", "Matthew 24:44"),
+        ("Matthew 24:6", "2 Thessalonians 2:3", "Luke 21:20"),
+        "The unknown hour and sudden coming, held against signs preceding it. Historically disputed.",
+    ),
+    (
+        ("Matthew 6:16", "Matthew 6:17", "Matthew 6:18"),
+        ("Joel 2:15", "Acts 13:2", "Acts 13:3"),
+        "Fasting in secret, held against called corporate fasts.",
+    ),
+    (
+        ("James 5:16", "1 John 1:9"),
+        ("1 Timothy 2:5", "Hebrews 4:16"),
+        "Confession to one another, held against the one mediator and direct access. Historically disputed.",
+    ),
+    (
+        ("Genesis 1:28", "Psalms 127:3", "Psalms 127:5"),
+        ("1 Corinthians 7:8", "1 Corinthians 7:32", "Matthew 19:12"),
+        "The blessing of children and family, held against the commendation of singleness.",
+    ),
+    (
+        ("2 Timothy 3:16", "Psalms 119:105"),
+        ("2 Peter 3:16", "John 16:13", "Acts 8:31"),
+        "The sufficiency and clarity of Scripture, held against passages acknowledging hard texts and the need for teaching.",
     ),
 )
 
